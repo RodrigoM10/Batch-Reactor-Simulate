@@ -1,24 +1,9 @@
 import numpy as np
-from scipy.integrate import quad
+from scipy.integrate import quad, solve_ivp
 from ReactionRate import reaction_rate
+from ReactorBalance import balance_reactor
 
 def isothermal_reaction_time(k, C_A0, C_B0, X_A_desired, order, stoichiometry,excess_B):
-    """
-    Calcula el tiempo de reacción isotérmico resolviendo la integral t_r = ∫ (1/r_A) dX_A.
-
-    Parámetros:
-        k            -> Constante de velocidad (1/min, L/mol*min, etc.)
-        C_A0         -> Concentración inicial de A (mol/L)
-        C_B0         -> Concentración inicial de B (mol/L) (opcional)
-        X_A_desired  -> Conversión deseada del reactivo limitante
-        order        -> Orden de la reacción (1 o 2)
-        stoichiometry -> Diccionario con coeficientes estequiométricos {"A": -1, "B": -1, "C": 1, "D": 1}
-
-
-    Retorna:
-        t_r_values -> Lista de tiempos acumulados evaluados.
-        X_A_values -> Lista de conversiones correspondientes.
-    """
 
     # Función interna para evaluar 1/r_A en función de X_A
     def integrand(X_A):
@@ -43,3 +28,22 @@ def isothermal_reaction_time(k, C_A0, C_B0, X_A_desired, order, stoichiometry,ex
             t_r_values.append(np.inf)
 
     return t_r_values, X_A_values  # Devolvemos tiempos y conversiones correctas
+
+def calculate_conversion_at_time(t_eval, k, C_A0, C_B0, order, stoichiometry, excess_B=False):
+    """
+    Calcula la conversión alcanzada en cada punto de t_eval para un sistema isotérmico.
+
+    Retorna:
+        X_A_eval -> Conversión de A en t_eval
+    """
+    y0 = [0.0]
+
+    sol = solve_ivp(
+        lambda t, y: balance_reactor(t, y, k, C_A0, C_B0, order, stoichiometry, excess_B),
+        [t_eval[0], t_eval[-1]],
+        y0,
+        t_eval=t_eval,
+        dense_output=True
+    )
+
+    return sol.y[0]
