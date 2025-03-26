@@ -13,5 +13,6 @@ def calculate_rate_constant(A, E, T):
         k -> Constante de velocidad (1/min)
     """
     R = 1.987207  # J/mol·K (constante de los gases)
+    #R = 8.31447  # J/mol·K (constante de los gases)
     k = A * np.exp(-E / (R * T))
     return k

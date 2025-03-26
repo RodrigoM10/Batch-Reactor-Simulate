@@ -1,22 +1,16 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 
 # Importamos módulos
 from ReactorBalance import balance_reactor
-from SimulateBR.IsothermalReaction import calculate_conversion_at_time
-from SimulateBR.VolumeCalculation import calculate_batch_reactor_volume
+from IsothermalReaction import calculate_conversion_at_time, isothermal_reaction_time
+from VolumeCalculation import calculate_batch_reactor_volume
 from Stoichiometry import calculate_concentrations
 from Display import graph_conversion, graph_concentrations, graph_inverse_rate
-from IsothermalReaction import isothermal_reaction_time
 from RateConstant import calculate_rate_constant
-
 
 def batch_reactor_simulate(k, C_A0, C_B0, C_I, X_A_desired, order, stoichiometry, mode, excess_B,
                            A=None, E=None, T=None, t_reaction_det=None):
-
-    #if X_A_desired >= 1 or X_A_desired <= 0:
-      #  raise ValueError("X_A_desired debe estar entre 0 y 1")
 
     if mode == "isothermal":
         # Si se proporciona A, E y T, se calcula k por Arrhenius
@@ -26,15 +20,22 @@ def batch_reactor_simulate(k, C_A0, C_B0, C_I, X_A_desired, order, stoichiometry
 
         if t_reaction_det is not None:
             # Nuevo camino: calcular conversión a tiempo dado
+            print("calcular conversion a partir del tiempo de reaccion")
             t_eval = np.linspace(0, t_reaction_det, 100)
             X_A_eval = calculate_conversion_at_time(t_eval, k, C_A0, C_B0, order, stoichiometry, excess_B)
             t_final = t_reaction_det
+
         else:
             # Camino clásico: conversión deseada
             t_eval, X_A_eval = isothermal_reaction_time(k, C_A0, C_B0, X_A_desired, order, stoichiometry, excess_B)
             t_final = t_eval[-1]
 
+        # Validación segura de conversión
+        if (X_A_eval < 0).any() or (X_A_eval > 1).any():
+            raise ValueError("❌ Se detectaron valores de conversión fuera del rango [0, 1].")
+
         concentrations = calculate_concentrations(C_A0, C_B0, X_A_eval, stoichiometry)
+
         return t_eval, X_A_eval, concentrations, t_final, k
 
     else:
@@ -48,7 +49,6 @@ def batch_reactor_simulate(k, C_A0, C_B0, C_I, X_A_desired, order, stoichiometry
         sol = solve_ivp(lambda t, y: balance_reactor(t, y, k, C_A0, C_B0, order, stoichiometry, excess_B),
                         [0, 1000], y0, events=stop_event, dense_output=True)
 
-
         if len(sol.t_events[0]) == 0:
             raise ValueError( "El evento no fue detectado. Verifique las condiciones iniciales o reduzca el valor de X_A_desired.")
 
@@ -56,6 +56,9 @@ def batch_reactor_simulate(k, C_A0, C_B0, C_I, X_A_desired, order, stoichiometry
         t_eval = np.linspace(0, t_final, 100)
         X_A_eval = sol.sol(t_eval)[0]
 
+        # Validación segura de conversión
+        if (X_A_eval < 0).any() or (X_A_eval > 1).any():
+            raise ValueError("❌ Se detectaron valores de conversión fuera del rango [0, 1].")
         concentrations = calculate_concentrations(C_A0, C_B0, X_A_eval, stoichiometry)
 
         return t_eval, X_A_eval, concentrations, t_final, k
@@ -64,17 +67,17 @@ def batch_reactor_simulate(k, C_A0, C_B0, C_I, X_A_desired, order, stoichiometry
 
 # **Parámetros iniciales**
 mode = "isothermal"
-stoichiometry = {"A":-1, "B":-1, "C":1}
-type_reaction = "ia A + ib B -> ic C + id C"
-order = 1 # Orden de la reacción
-C_A0 = 1 # Concentración inicial de A (mol/L)
-C_B0 = 2.5  # Concentración inicial de B (mol/L)
+stoichiometry = {"A":-1, "B":-2, "C":1, "D":1}
+type_reaction = "ia A + ib B -> ic C + id D"
+order = 2 # Orden de la reacción
+C_A0 = 1.77 # Concentración inicial de A (mol/L)
+C_B0 = 6.47  # Concentración inicial de B (mol/L)
 C_I = 0.0  # Concentración de inertes (mol/L)
 excess_B = False #Booleano que indica si B está en exceso
 
 # Inicialización de variables
 A = E = T  = None
-k = 0.0254 # Constante de velocidad (1/min o s)
+k = 0.000119 # Constante de velocidad (1/min o s)
 t_reaction_det = None
 X_A_desired = None
 
@@ -104,8 +107,8 @@ if mode == "isothermal":
         raise ValueError("Opción inválida. Debe ingresar 'X' o 'T'.")
 else:
     A = E = T = t_reaction_det = None
-    X_A_desired = 0.90
-    k = 0.311
+    X_A_desired = 0.034
+    k = 0.000119
 
 # Ejecutamos la simulación
 try:
@@ -113,6 +116,11 @@ try:
         k, C_A0, C_B0, C_I, X_A_desired, order, stoichiometry, mode, excess_B,
         A=A, E=E, T=T, t_reaction_det = t_reaction_det
     )
+    print(f"✅ Simulación terminada")
+
+
+    if any(X < 0 or X > 1 for X in X_A_eval):
+        raise ValueError("❌ Se detectaron valores de conversión fuera del rango físico permitido (0 a 1).")
 
     # **Graficamos los resultados**
     graph_conversion(t_eval, X_A_eval)
@@ -129,32 +137,38 @@ try:
             print(f"Tiempo necesario para alcanzar X_A = {X_A_desired} es {t_final:.2f} minutos ✅")
 
         # Cálculo de volumen
-        print("\n--- Cálculo del volumen del reactor ---")
-        try:
-            # Solicitar al usuario los datos necesarios
-            P_k = float(input("Ingrese la producción deseada del producto k (en g/min): "))
-            t_carga_descarga = float(input("Ingrese el tiempo de carga y descarga (min): "))
-            t_muerto = float(input("Ingrese el tiempo muerto del ciclo (min): "))
-            producto_k = input("Ingrese el nombre del producto (por ejemplo, C o D): ").strip()
-            m_k = float(input(f"Ingrese la masa molar de {producto_k} (g/mol): "))
+        ans_volume = input("¿Desea calcular el volumen del reactor? (s / n): ").strip().lower()
 
-            # Obtener coeficiente estequiométrico del producto desde el diccionario
-            if producto_k not in stoichiometry:
-                raise ValueError(f"'{producto_k}' no está definido en la estequiometría de la reacción.")
+        if ans_volume == "s":
+            print("\n--- Cálculo del volumen del reactor ---")
+            try:
+                # Solicitar al usuario los datos necesarios
+                P_k = float(input("Ingrese la producción deseada del producto k (en g/min): "))
+                t_carga_descarga = float(input("Ingrese el tiempo de carga y descarga (min): "))
+                t_muerto = float(input("Ingrese el tiempo muerto del ciclo (min): "))
+                producto_k = input("Ingrese el nombre del producto (por ejemplo, C o D): ").strip()
+                m_k = float(input(f"Ingrese la masa molar de {producto_k} (g/mol): "))
 
-            alpha_k = stoichiometry[producto_k]
-            if alpha_k <= 0:
-                raise ValueError(f"'{producto_k}' no es un producto (coeficiente debe ser positivo).")
+                # Obtener coeficiente estequiométrico del producto desde el diccionario
+                if producto_k not in stoichiometry:
+                    raise ValueError(f"'{producto_k}' no está definido en la estequiometría de la reacción.")
 
-            alpha_X_list = [alpha_k * (X_A_desired if X_A_desired is not None else X_A_eval[-1])]
-            V = calculate_batch_reactor_volume(P_k, m_k, alpha_X_list, t_final, t_carga_descarga, t_muerto)
-            print(f"\n✅ Volumen necesario del reactor: {V:.2f} L")
+                alpha_k = stoichiometry[producto_k]
+                if alpha_k <= 0:
+                    raise ValueError(f"'{producto_k}' no es un producto (coeficiente debe ser positivo).")
 
-        except ValueError as err:
-            print(f"❌ Error en el cálculo del volumen: {err}")
+                alpha_X_list = [alpha_k * (X_A_desired if X_A_desired is not None else X_A_eval[-1])]
+                V = calculate_batch_reactor_volume(P_k, m_k, alpha_X_list, t_final, t_carga_descarga, t_muerto)
+                print(f"\n✅ Volumen necesario del reactor: {V:.2f} L")
 
-    # **Mostramos el tiempo necesario para alcanzar la conversión deseada**
-    #print(f"Tiempo necesario para alcanzar X_A = {X_A_desired} es {t_final:.2f} minutos")
+            except ValueError as err:
+                print(f"❌ Error en el cálculo del volumen: {err}")
+        else:
+            print("\n--- Volumen del reactor no calculado ---")
+
+
+    else:
+         print(f"Tiempo necesario para alcanzar X_A = {X_A_desired} es {t_final:.2f} minutos")
 
 except ValueError as e:
     print(f"Error: {e}")

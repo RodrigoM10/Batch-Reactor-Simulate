@@ -29,21 +29,12 @@ def isothermal_reaction_time(k, C_A0, C_B0, X_A_desired, order, stoichiometry,ex
 
     return t_r_values, X_A_values  # Devolvemos tiempos y conversiones correctas
 
-def calculate_conversion_at_time(t_eval, k, C_A0, C_B0, order, stoichiometry, excess_B=False):
-    """
-    Calcula la conversión alcanzada en cada punto de t_eval para un sistema isotérmico.
+def calculate_conversion_at_time(t_eval, k, C_A0, C_B0, order, stoichiometry, excess_B):
 
-    Retorna:
-        X_A_eval -> Conversión de A en t_eval
-    """
     y0 = [0.0]
+    sol = solve_ivp( lambda t, y: balance_reactor(t, y, k, C_A0, C_B0, order, stoichiometry, excess_B),
+                     [t_eval[0], t_eval[-1]], y0, t_eval=t_eval,dense_output=True)
+    # Clip para mantener conversiones físicas válidas entre 0 y 1
+    X_A_eval = np.clip(sol.y[0], 0.0, 1.0)
 
-    sol = solve_ivp(
-        lambda t, y: balance_reactor(t, y, k, C_A0, C_B0, order, stoichiometry, excess_B),
-        [t_eval[0], t_eval[-1]],
-        y0,
-        t_eval=t_eval,
-        dense_output=True
-    )
-
-    return sol.y[0]
+    return X_A_eval
