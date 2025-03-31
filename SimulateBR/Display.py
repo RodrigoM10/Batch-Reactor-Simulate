@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
-from ReactionRate import reaction_rate
+
+from ReactionUtils import reaction_rate
+
 
 def graph_conversion(t_eval, X_A_eval):
     """
@@ -17,7 +19,6 @@ def graph_conversion(t_eval, X_A_eval):
     plt.grid()
     plt.title("Conversión de A vs. Tiempo")
     plt.show()
-
 
 def graph_concentrations(t_eval, concentrations):
     """
@@ -45,6 +46,8 @@ def graph_concentrations(t_eval, concentrations):
     plt.title("Concentraciones de Reactivos y Productos vs. Tiempo")
     plt.show()
 
+
+# Grafica exclusiva para modo isotermico
 def graph_inverse_rate(X_A, k, C_A0, C_B0, order, stoichiometry,excess_B):
     """
     Grafica 1/r_A en función de X_A.
@@ -65,4 +68,27 @@ def graph_inverse_rate(X_A, k, C_A0, C_B0, order, stoichiometry,excess_B):
     plt.legend()
     plt.grid()
     plt.title("Gráfico de 1/r_A vs X_A")
+    plt.show()
+
+
+# Graficas para modo no isotermico
+def graph_temperature(t_eval, T_eval):
+    plt.figure()
+    plt.plot(t_eval, T_eval)
+    plt.xlabel("Tiempo (min)")
+    plt.ylabel("Temperatura (K)")
+    plt.title("Evolución de la Temperatura")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+
+def graph_conversion_vs_temperature(X_A_eval, T_eval):
+    plt.figure()
+    plt.plot(T_eval, X_A_eval)
+    plt.xlabel("Temperatura (K)")
+    plt.ylabel("Conversión de A")
+    plt.title("Conversión vs Temperatura")
+    plt.grid(True)
+    plt.tight_layout()
     plt.show()

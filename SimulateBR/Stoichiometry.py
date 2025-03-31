@@ -1,5 +1,4 @@
 def calculate_concentrations(C_A0, C_B0, X_A, stoichiometry):
-
     C_A = C_A0 * (1 - X_A)  # Reactivo limitante
 
     # Inicializamos concentraciones con None por si no existen en la estequiometría
