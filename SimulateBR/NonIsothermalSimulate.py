@@ -26,7 +26,7 @@ def nonisothermal_batch_reactor_simulate(k, C_A0, C_B0, C_I, order, stoichiometr
         ),
         [0, 1000],
         y0,
-        dense_output=True
+        dense_output=True,
     )
 
     t_eval = np.linspace(0, sol.t[-1], 100)
@@ -34,4 +34,6 @@ def nonisothermal_batch_reactor_simulate(k, C_A0, C_B0, C_I, order, stoichiometr
     T_eval = sol.sol(t_eval)[1]
     concentrations = calculate_concentrations(C_A0, C_B0, X_A_eval, stoichiometry)
 
+    print("conversion:", X_A_eval, "temperatura:", T_eval, "tiempo:", t_eval)
     return t_eval, X_A_eval, T_eval, concentrations, sol.t[-1]
+

@@ -12,7 +12,7 @@ def isothermal_reaction_time(k, C_A0, C_B0, X_A_desired, order, stoichiometry,ex
         # Evita divisiones por cero retornando infinito si r_A = 0 o valores inconsistentes
         if r_A == 0:
             return np.inf
-        return 1 / (-r_A) if r_A < 0 else np.inf
+        return 1 / (r_A) if r_A < 0 else np.inf
 
     # Generar valores de conversión de 0 a X_A_desired distribuidos uniformemente
     X_A_values = np.linspace(0, X_A_desired, 100)

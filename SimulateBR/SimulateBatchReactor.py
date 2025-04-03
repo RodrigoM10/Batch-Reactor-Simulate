@@ -4,6 +4,7 @@ from Display import (
     graph_inverse_rate,
     graph_temperature,
     graph_conversion_vs_temperature,
+    concentration_time_table,
 )
 from IsothermalSimulate import isothermal_batch_reactor_simulate
 from NonIsothermalSimulate import nonisothermal_batch_reactor_simulate
@@ -83,20 +84,20 @@ if mode == "isothermal":
         print("\nℹ️ Volumen del reactor no calculado.")
 
 elif mode == "non-isothermal":
-    C_A0 = 1.0
-    C_B0 = 55.5
-    C_I = 0.0
+    C_A0 = 54.8
+    C_B0 = 555
+    C_I = 98.8
     order = 1
-    X_A_desired = 0.8
+    X_A_desired = 0.515
     stoichiometry = {"A": -1, "B": -1, "C": 1}
-    excess_B = True
+    excess_B = False
     k = None
     #----------
     A = 4710000000
     E = 18000
     T_ref = 297
     T0 = 286
-    delta_H_rxn = 20202
+    delta_H_rxn = (0-20202)
     mode_energy = "adiabatic"
 
     C_p_dict = {
@@ -139,7 +140,7 @@ else:
 # Mostrar resultados generales
 graph_conversion(t_eval, X_A_eval)
 graph_concentrations(t_eval, concentrations)
-
+concentration_time_table(t_eval, concentrations, stoichiometry,t_final)
 print(f"\n✅ Tiempo final de simulación: {t_final:.2f} min")
 if mode == "non-isothermal":
     print(f"🌡️ Temperatura final: {T_eval[-1]:.2f} K")

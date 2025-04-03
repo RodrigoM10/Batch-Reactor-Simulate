@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-
+import numpy as np
 from ReactionUtils import reaction_rate
 
 
@@ -91,4 +91,36 @@ def graph_conversion_vs_temperature(X_A_eval, T_eval):
     plt.title("Conversión vs Temperatura")
     plt.grid(True)
     plt.tight_layout()
+    plt.show()
+
+
+def concentration_time_table(t_eval, concentrations, stoichiometry, t_final):
+    # ⚙️ Paso 1: generar hasta 10 tiempos uniformemente espaciados y redondearlos
+    num_puntos = 10
+    tiempos_objetivo = np.linspace(0, t_final, num=num_puntos)
+    tiempos_objetivo = [round(t, 2) for t in tiempos_objetivo]
+
+    # 🧪 Paso 2: definir especies y columnas
+    especies = list(stoichiometry.keys())
+    columnas = ["Tiempo (min)"] + [f"[{e}] (mol/L)" for e in especies]
+
+    # 🧩 Paso 3: construir las filas de la tabla
+    data = []
+    for t_obj in tiempos_objetivo:
+        idx = np.abs(np.array(t_eval) - t_obj).argmin()  # buscar el tiempo más cercano
+        fila = [f"{t_obj:.2f}"]
+        for e in especies:
+            conc = concentrations.get(e)
+            fila.append(round(conc[idx], 4) if conc is not None else "N/A")
+        data.append(fila)
+
+    # 🎨 Paso 4: mostrar como tabla gráfica con altura ajustada
+    fig, ax = plt.subplots(figsize=(10, len(data) * 0.5))
+    ax.axis('off')
+    tabla = plt.table(cellText=data, colLabels=columnas, cellLoc='center', loc='center')
+    tabla.scale(1.2, 1.5)
+    tabla.auto_set_font_size(False)
+    tabla.set_fontsize(9)
+    plt.title("Concentraciones en el tiempo (Vista Tabla)", fontweight='bold')
+    plt.subplots_adjust(top=0.85)  # espacio para título
     plt.show()
