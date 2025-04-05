@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from ReactionUtils import reaction_rate
+from SimulateBR.RateConstant import calculate_rate_constant
 
 
 def graph_conversion(t_eval, X_A_eval):
@@ -72,15 +73,30 @@ def graph_inverse_rate(X_A, k, C_A0, C_B0, order, stoichiometry,excess_B):
 
 
 # Graficas para modo no isotermico
-def graph_temperature(t_eval, T_eval):
+def graph_temperature(t_eval, T_eval, Ta2=None):
     plt.figure()
-    plt.plot(t_eval, T_eval)
-    plt.xlabel("Tiempo (min)")
+    plt.plot(t_eval, T_eval, label='T (K)', color='r')
+    if Ta2 is not None:
+        plt.plot(np.array(t_eval), Ta2, label='Ta2 (K)', linestyle='--')
+
+    plt.xlabel("Tiempo (s)")
     plt.ylabel("Temperatura (K)")
-    plt.title("Evolución de la Temperatura")
+    if Ta2 is not None:
+        plt.title("Evolución de la Temperatura del reactor y del refrigerante")
+    else:
+        plt.title("Evolucion de la Temperatura del reactor")
+    plt.legend()
     plt.grid(True)
+
+    # Definir saltos ajustables según duración
+    max_t = max(t_eval)
+    salto = max(100, int(max_t // 10))  # 10 ticks aproximadamente
+    ticks_x = np.arange(0, max_t + salto, salto)
+    plt.xticks(ticks_x)
     plt.tight_layout()
     plt.show()
+
+
 
 
 def graph_conversion_vs_temperature(X_A_eval, T_eval):
@@ -93,6 +109,24 @@ def graph_conversion_vs_temperature(X_A_eval, T_eval):
     plt.tight_layout()
     plt.show()
 
+# def graph_heat_rates(t_eval, X_eval, T_eval, A, E, T_ref, delta_H_rxn, Nao, U, A_ICQ, T_cool, m_c, Cp_ref):
+#     from RateConstant import calculate_rate_constant
+#
+#     k_eval = [calculate_rate_constant(A=A, E=E, T=T, T_ref=T_ref) for T in T_eval]
+#     Qg_eval = [Nao * k * (1 - X) * (-delta_H_rxn) for k, X in zip(k_eval, X_eval)]
+#     exp_term = np.exp(-U * A_ICQ / (m_c * Cp_ref))
+#     Qr_eval = [m_c * Cp_ref * (T - T_cool) * (1 - exp_term) for T in T_eval]
+#
+#     plt.figure(figsize=(8, 5))
+#     plt.plot(np.array(t_eval)/60, Qg_eval, label='Qg (cal/s)', color='gray')
+#     plt.plot(np.array(t_eval)/60, Qr_eval, label='Qr (cal/s)', color='black')
+#     plt.xlabel("Tiempo (min)")
+#     plt.ylabel("Tasa de calor (cal/s)")
+#     plt.title("Tasas de generación y remoción de calor (Qg y Qr)")
+#     plt.legend()
+#     plt.grid(True)
+#     plt.tight_layout()
+#     plt.show()
 
 def concentration_time_table(t_eval, concentrations, stoichiometry, t_final):
     # ⚙️ Paso 1: generar hasta 10 tiempos uniformemente espaciados y redondearlos

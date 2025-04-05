@@ -1,4 +1,3 @@
-# ReactionUtils.py
 def balance_reactor(t, y, k, C_A0, C_B0, order, stoichiometry, excess_B):
     X_A = y[0]
 
@@ -12,7 +11,6 @@ def balance_reactor(t, y, k, C_A0, C_B0, order, stoichiometry, excess_B):
 def reaction_rate(X_A, k, C_A0, C_B0, order, stoichiometry, excess_B):
     if not 0 <= X_A <= 1:
         raise ValueError("X_A fuera de rango válido (0 a 1)", X_A)
-    print("5 X_A:", X_A)
     # Concentraciones de los reactivos según estequiometría
     C_A = C_A0 * (1 - X_A)  # Reactivo limitante
     C_B = C_B0 - (stoichiometry["B"] / stoichiometry["A"]) * C_A0 * X_A if "B" in stoichiometry else None

@@ -5,6 +5,7 @@ from Display import (
     graph_temperature,
     graph_conversion_vs_temperature,
     concentration_time_table,
+    #graph_heat_rates
 )
 from IsothermalSimulate import isothermal_batch_reactor_simulate
 from NonIsothermalSimulate import nonisothermal_batch_reactor_simulate
@@ -97,15 +98,15 @@ elif mode == "non-isothermal":
     E = 18000
     T_ref = 297
     T0 = 286
-    delta_H_rxn = (0-20202)
-    mode_energy = "adiabatic"
-
+    delta_H_rxn = -20202
     C_p_dict = {
         "A": 35,
         "B": 18,
         "C": 46,
         "I": 19.5,
     }
+    mode_energy = "ICQ"
+
     #----------
     # A = float(input("Ingrese el factor preexponencial A (1/min): "))
     # E = float(input("Ingrese E (J/mol): "))
@@ -121,19 +122,27 @@ elif mode == "non-isothermal":
     #     "I": float(input("Cp I (J/mol·K): ")),
     # }
 
-    U = A_ICQ = T_cool = None
+    U = A_ICQ = T_cool = m_c = Cp_ref = None
     if mode_energy in ["non-adiabatic", "ICQ"]:
-        U = float(input("Ingrese coeficiente global de transferencia U (J/min·m²·K): "))
-        A_ICQ = float(input("Ingrese área de intercambio A (m²): "))
-        T_cool = float(input("Ingrese temperatura del fluido de enfriamiento (K): "))
+        # U = float(input("Ingrese coeficiente global de transferencia U : "))
+        # A_ICQ = float(input("Ingrese área de intercambio A : "))
+        # T_cool = float(input("Ingrese temperatura del fluido de enfriamiento (K): "))
+        # m_c = float(input("Ingrese velocidad del refrigerante: "))
+        # Cp_ref = float(input("Ingrese Capacidad calorifica del refrigerante: "))
+        U = 10
+        A_ICQ = 1
+        T_cool = 290
+        m_c = 10
+        Cp_ref = 4.16
 
-    t_eval, X_A_eval, T_eval, concentrations, t_final = nonisothermal_batch_reactor_simulate(
+    t_eval, X_A_eval, T_eval, concentrations, t_final, k_final, Ta2 = nonisothermal_batch_reactor_simulate(
         k, C_A0, C_B0, C_I, order, stoichiometry, excess_B,
         A, E, T0, T_ref, delta_H_rxn, C_p_dict,
-        mode_energy, U, A_ICQ, T_cool
+        mode_energy, U, A_ICQ, T_cool, m_c, Cp_ref
     )
-    graph_temperature(t_eval, T_eval)
-    graph_conversion_vs_temperature(X_A_eval, T_eval)
+    graph_temperature(t_eval, T_eval, Ta2)
+    if mode_energy in ["adiabatic"]: graph_conversion_vs_temperature(X_A_eval, T_eval)
+    #if mode_energy in ["non-adiabatic", "ICQ"]: graph_heat_rates(t_eval, X_A_eval, T_eval, A, E, T_ref, delta_H_rxn, Nao, U, A_ICQ, T_cool, m_c, Cp_ref)
 else:
     raise ValueError("Modo inválido")
 
@@ -144,4 +153,6 @@ concentration_time_table(t_eval, concentrations, stoichiometry,t_final)
 print(f"\n✅ Tiempo final de simulación: {t_final:.2f} min")
 if mode == "non-isothermal":
     print(f"🌡️ Temperatura final: {T_eval[-1]:.2f} K")
+    print(f"🌠 Constante de Velocidad K final: {k_final:.5f}")
+
 print(f"🧪 Conversión final: {X_A_eval[-1]:.4f}")
