@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+
 from ReactionUtils import reaction_rate
 from SimulateBR.RateConstant import calculate_rate_constant
 
@@ -109,24 +110,26 @@ def graph_conversion_vs_temperature(X_A_eval, T_eval):
     plt.tight_layout()
     plt.show()
 
-# def graph_heat_rates(t_eval, X_eval, T_eval, A, E, T_ref, delta_H_rxn, Nao, U, A_ICQ, T_cool, m_c, Cp_ref):
-#     from RateConstant import calculate_rate_constant
-#
-#     k_eval = [calculate_rate_constant(A=A, E=E, T=T, T_ref=T_ref) for T in T_eval]
-#     Qg_eval = [Nao * k * (1 - X) * (-delta_H_rxn) for k, X in zip(k_eval, X_eval)]
-#     exp_term = np.exp(-U * A_ICQ / (m_c * Cp_ref))
-#     Qr_eval = [m_c * Cp_ref * (T - T_cool) * (1 - exp_term) for T in T_eval]
-#
-#     plt.figure(figsize=(8, 5))
-#     plt.plot(np.array(t_eval)/60, Qg_eval, label='Qg (cal/s)', color='gray')
-#     plt.plot(np.array(t_eval)/60, Qr_eval, label='Qr (cal/s)', color='black')
-#     plt.xlabel("Tiempo (min)")
-#     plt.ylabel("Tasa de calor (cal/s)")
-#     plt.title("Tasas de generación y remoción de calor (Qg y Qr)")
-#     plt.legend()
-#     plt.grid(True)
-#     plt.tight_layout()
-#     plt.show()
+
+def graph_heat_rates(t_eval, X_A_eval, T_eval, A, E, T_ref, delta_H_rxn, C_A0, C_B0, order, stoichiometry, excess_B,
+                     U, A_ICQ, T_cool, m_c, Cp_ref):
+
+    k_eval = [calculate_rate_constant(A=A, E=E, T=T, T_ref=T_ref) for T in T_eval]
+    r_A = [reaction_rate(x, k, C_A0, C_B0, order, stoichiometry, excess_B) for x, k in zip(X_A_eval, k_eval)]
+
+    Qgb_eval = np.array([-delta_H_rxn * r for r in r_A])
+    Qrb_eval = np.array([(m_c * Cp_ref) * ((T - T_cool) * (1 - np.exp((-U * A_ICQ) / (m_c * Cp_ref)))) for T in T_eval])
+
+    plt.figure(figsize=(8, 5))
+    plt.plot(np.array(t_eval) / 60, Qgb_eval, label='Qg (cal/s)', color='gray')
+    plt.plot(np.array(t_eval) / 60, Qrb_eval, label='Qr (cal/s)', color='black')
+    plt.xlabel("Tiempo (min)")
+    plt.ylabel("Tasa de calor (cal/s)")
+    plt.title("Tasas de generación y remoción de calor (Qg y Qr)")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
 
 def concentration_time_table(t_eval, concentrations, stoichiometry, t_final):
     # ⚙️ Paso 1: generar hasta 10 tiempos uniformemente espaciados y redondearlos

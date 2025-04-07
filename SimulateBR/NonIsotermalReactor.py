@@ -32,7 +32,6 @@ def balance_reactor_nonisothermal(t, y, k, A, C_A0, C_B0, C_I, order, stoichiome
 
     Q_gb = -delta_H_rxn * r_A
     Q_rb = (m_c * Cp_ref) * ((T - T_cool) * (1 - np.exp((-U * A_ICQ) / (m_c * Cp_ref))))
-
     dT_dt = (Q_gb - Q_rb) / Cp_total if Cp_total > 0 else 0
 
     return [dX_A_dt, dT_dt]

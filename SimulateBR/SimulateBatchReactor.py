@@ -5,7 +5,7 @@ from Display import (
     graph_temperature,
     graph_conversion_vs_temperature,
     concentration_time_table,
-    #graph_heat_rates
+    graph_heat_rates
 )
 from IsothermalSimulate import isothermal_batch_reactor_simulate
 from NonIsothermalSimulate import nonisothermal_batch_reactor_simulate
@@ -142,7 +142,8 @@ elif mode == "non-isothermal":
     )
     graph_temperature(t_eval, T_eval, Ta2)
     if mode_energy in ["adiabatic"]: graph_conversion_vs_temperature(X_A_eval, T_eval)
-    #if mode_energy in ["non-adiabatic", "ICQ"]: graph_heat_rates(t_eval, X_A_eval, T_eval, A, E, T_ref, delta_H_rxn, Nao, U, A_ICQ, T_cool, m_c, Cp_ref)
+    if mode_energy in ["non-adiabatic", "ICQ"]: graph_heat_rates(t_eval, X_A_eval, T_eval, A, E, T_ref, delta_H_rxn, C_A0, C_B0, order, stoichiometry, excess_B,
+                                                                 U, A_ICQ, T_cool, m_c, Cp_ref)
 else:
     raise ValueError("Modo inválido")
 

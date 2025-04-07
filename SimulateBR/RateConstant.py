@@ -14,9 +14,8 @@ def calculate_rate_constant(A=None, E=None, T=None, T_ref=None):
         if T_ref is not None:
             #Usamos T_ref si está disponible
             k_ref = A * np.exp(-E / (R * T_ref))
-            print("5 k_ref :", k_ref)
             k = k_ref * np.exp((E/R) * (1/T_ref - 1/T))
-            print("6 k :", k)
+
         else:
             # Solo usamos A y T
             k = A * np.exp(-E / (R * T))

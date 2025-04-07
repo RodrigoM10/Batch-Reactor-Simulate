@@ -71,4 +71,5 @@ def nonisothermal_batch_reactor_simulate(k, C_A0, C_B0, C_I, order, stoichiometr
         T_final = T_eval[-1]
         k_final = calculate_rate_constant(A=A, E=E, T=T_final, T_ref=T_ref)
         Ta2 = T_eval - (T_eval - T_cool) * np.exp(-U * A_ICQ / (m_c * Cp_ref))
+
         return t_eval, X_A_eval, T_eval, concentrations, sol.t[-1], k_final, Ta2
