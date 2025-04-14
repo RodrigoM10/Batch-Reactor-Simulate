@@ -9,10 +9,9 @@ def isothermal_reaction_time(k, C_A0, C_B0, X_A_desired, order, stoichiometry,ex
     # Función interna para evaluar 1/r_A en función de X_A
     def integrand(X_A):
         r_A = reaction_rate(X_A, k, C_A0, C_B0, order, stoichiometry, excess_B)
-        # Evita divisiones por cero retornando infinito si r_A = 0 o valores inconsistentes
-        if r_A == 0:
+        if r_A <= 0 or np.isnan(r_A):
             return np.inf
-        return 1 / (r_A) if r_A < 0 else np.inf
+        return C_A0 / r_A
 
     # Generar valores de conversión de 0 a X_A_desired distribuidos uniformemente
     X_A_values = np.linspace(0, X_A_desired, 100)
