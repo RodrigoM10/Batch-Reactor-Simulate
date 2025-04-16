@@ -15,11 +15,11 @@ from VolumeCalculation import calculate_batch_reactor_volume
 mode = input("¿Modo de operación? (isothermal / non-isothermal): ").strip().lower()
 
 if mode == "isothermal":
-    C_A0 = 1.0
-    C_B0 = 55.5
-    order = 1
-    stoichiometry = {"A": -1, "B": -1, "C": 1}
-    excess_B = True
+    C_A0 = 9.04/5.1
+    C_B0 = 33/5.1
+    order = 2
+    stoichiometry = {"A": -1, "B": -2, "C": 1, "D":1}
+    excess_B = False
 
     k_det = (
         input("¿Desea ingresar directamente la constante de velocidad k? (s/n): ")
@@ -27,13 +27,17 @@ if mode == "isothermal":
         .lower()
     )
     if k_det == "s":
-        k = float(input("Ingrese la constante de velocidad k (1/min): "))
+        #k = float(input("Ingrese la constante de velocidad k (1/min): "))
+        k = 0.000119 #m3/kmol.min
         A = E = T = None
     else:
         print("\n--- Cálculo de constante de velocidad usando Arrhenius ---")
-        A = float(input("Ingrese el factor preexponencial A (1/min): "))
-        E = float(input("Ingrese la energía de activación E (J/mol): "))
-        T = float(input("Ingrese la temperatura de operación T (K): "))
+        # A = float(input("Ingrese el factor preexponencial A (1/min): "))
+        # E = float(input("Ingrese la energía de activación E (J/mol): "))
+        # T = float(input("Ingrese la temperatura de operación T (K): "))
+        A = 37.598 #m3/kmol.min
+        E = 11273 #cal/mol = kcal/kmol
+        T = 448 #k
         k = None
     opcion = input("¿Desea ingresar conversión deseada (X) o tiempo (T)? ").strip().upper()
     if opcion == "X":
@@ -85,27 +89,27 @@ if mode == "isothermal":
         print("\nℹ️ Volumen del reactor no calculado.")
 
 elif mode == "non-isothermal":
-    C_A0 = 54.8
-    C_B0 = 555
-    C_I = 98.8
-    order = 1
-    X_A_desired = 0.515
-    stoichiometry = {"A": -1, "B": -1, "C": 1}
+    C_A0 = 9.04/5.1
+    C_B0 = 33/5.1
+    C_I = 103.7/5.1
+    order = 2
+    X_A_desired = None
+    stoichiometry = {"A": -1, "B": -2, "C": 1, "D":1}
     excess_B = False
     k = None
     #----------
-    A = 4710000000
-    E = 18000
-    T_ref = 297
-    T0 = 286
-    delta_H_rxn = -20202
+    A = 35.598 #m3/kmol.min
+    E = 11273 #cal/mol
+    T_ref = 461
+    T0 = 448
+    delta_H_rxn = -590000
     C_p_dict = {
-        "A": 35,
-        "B": 18,
-        "C": 46,
-        "I": 19.5,
+        "A": 40,
+        "B": 8.38,
+        "C": 0,
+        "I": 18,
     }
-    mode_energy = "ICQ"
+    mode_energy = "adiabatic"
 
     #----------
     # A = float(input("Ingrese el factor preexponencial A (1/min): "))
@@ -129,11 +133,11 @@ elif mode == "non-isothermal":
         # T_cool = float(input("Ingrese temperatura del fluido de enfriamiento (K): "))
         # m_c = float(input("Ingrese velocidad del refrigerante: "))
         # Cp_ref = float(input("Ingrese Capacidad calorifica del refrigerante: "))
-        U = 10
+        U = 35.85 #kmol/min.C
         A_ICQ = 1
-        T_cool = 290
-        m_c = 10
-        Cp_ref = 4.16
+        T_cool = 298
+        m_c = 830 #kg/min
+        Cp_ref = 540 #kcal/kg
 
     t_eval, X_A_eval, T_eval, concentrations, t_final, k_final, Ta2 = nonisothermal_batch_reactor_simulate(
         k, C_A0, C_B0, C_I, order, stoichiometry, excess_B,
