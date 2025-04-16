@@ -51,17 +51,8 @@ def graph_concentrations(t_eval, concentrations):
 
 # Grafica exclusiva para modo isotermico
 def graph_inverse_rate(X_A, k, C_A0, C_B0, order, stoichiometry,excess_B):
-    """
-    Grafica 1/r_A en función de X_A.
 
-    Parámetros:
-        X_A          -> Lista de conversiones
-        k            -> Constante de velocidad
-        C_A0, C_B0   -> Concentraciones iniciales
-        order        -> Orden de la reacción
-        stoichiometry -> Estequiometría del sistema
-    """
-    inverse_rate = [1 / -reaction_rate(x, k, C_A0, C_B0, order, stoichiometry,excess_B) for x in X_A]
+    inverse_rate = [1 / reaction_rate(x, k, C_A0, C_B0, order, stoichiometry,excess_B) for x in X_A]
 
     plt.figure()
     plt.plot(X_A, inverse_rate, label="1/r_A vs X_A", color='purple')

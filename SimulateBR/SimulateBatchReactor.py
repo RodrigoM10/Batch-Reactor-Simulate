@@ -63,7 +63,7 @@ if mode == "isothermal":
             P_k = float(input("Ingrese la producción deseada del producto k (en g/min): "))
             t_carga_descarga = float(input("Ingrese el tiempo de carga y descarga (min): "))
             t_muerto = float(input("Ingrese el tiempo muerto del ciclo (min): "))
-            producto_k = input("Ingrese el nombre del producto (por ejemplo, C o D): ").strip()
+            producto_k = input("Ingrese el nombre del producto (por ejemplo, C o D): ").strip().upper()
             m_k = float(input(f"Ingrese la masa molar de {producto_k} (g/mol): "))
 
             if producto_k not in stoichiometry:
