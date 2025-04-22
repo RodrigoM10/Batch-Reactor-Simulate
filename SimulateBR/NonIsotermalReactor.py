@@ -1,11 +1,13 @@
 import numpy as np
 
+from NonIsothermalEquilibriumConstant import keq_vanthoff_differential, \
+    nonIsothermal_equilibrium_conversion_calculate
 from RateConstant import calculate_rate_constant
 from ReactionUtils import reaction_rate
 
 
 def balance_reactor_nonisothermal(t, y, k, A, C_A0, C_B0, C_I, order, stoichiometry, excess_B,
-                                  C_p_dict, delta_H_rxn, E, T_ref,
+                                  C_p_dict, delta_H_rxn, E, T_ref, K_eq_ref,
                                   U=None, A_ICQ=None, T_cool=None, m_c=None, Cp_ref=None):
     if not isinstance(y, (list, np.ndarray)) or len(y) != 2:
         raise ValueError(
@@ -14,8 +16,8 @@ def balance_reactor_nonisothermal(t, y, k, A, C_A0, C_B0, C_I, order, stoichiome
 
     Cps = (
             C_p_dict.get("A", 0) +
-            (C_B0 / C_A0) * C_p_dict.get("B", 0) +
-            (C_I / C_A0) * C_p_dict.get("I", 0)
+            ((C_B0 / C_A0) * C_p_dict.get("B", 0) if C_B0 is not None else 0) +
+            ((C_I / C_A0) * C_p_dict.get("I", 0) if C_I is not None else 0)
     )
     Cp_total = Cps * C_A0
 
@@ -28,8 +30,18 @@ def balance_reactor_nonisothermal(t, y, k, A, C_A0, C_B0, C_I, order, stoichiome
     k_T = calculate_rate_constant(A=A, E=E, T=T, T_ref=T_ref)
     k = k_T
     r_A = reaction_rate(X_A, k, C_A0, C_B0, order, stoichiometry, excess_B)
-    dX_A_dt = r_A / C_A0
 
+    if K_eq_ref is not None:
+        K_eq_T = keq_vanthoff_differential(T, T_ref, K_eq_ref, delta_H_rxn)
+
+        try:
+            X_eq_T = nonIsothermal_equilibrium_conversion_calculate(K_eq_T, C_A0, C_B0, stoichiometry)
+            if X_A >= X_eq_T:
+                return [0.0, 0.0]
+        except ValueError:
+            pass
+
+    dX_A_dt = r_A / C_A0
     Q_gb = -delta_H_rxn * r_A
     Q_rb = (m_c * Cp_ref) * ((T - T_cool) * (1 - np.exp((-U * A_ICQ) / (m_c * Cp_ref))))
     dT_dt = (Q_gb - Q_rb) / Cp_total if Cp_total > 0 else 0

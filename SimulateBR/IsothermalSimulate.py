@@ -5,7 +5,7 @@ from RateConstant import calculate_rate_constant
 from Stoichiometry import calculate_concentrations
 
 
-def isothermal_batch_reactor_simulate(C_A0, C_B0, order, stoichiometry, excess_B,
+def isothermal_batch_reactor_simulate(C_A0, C_B0, order, stoichiometry, excess_B,X_eq,
                                       A, E, T, k,
                                       X_A_desired, t_reaction_det):
     if A is not None and E is not None and T is not None:
@@ -14,7 +14,7 @@ def isothermal_batch_reactor_simulate(C_A0, C_B0, order, stoichiometry, excess_B
     if t_reaction_det is not None:
         print("calcular conversion a partir del tiempo de reaccion")
         t_eval = np.linspace(0, t_reaction_det, 100)
-        X_A_eval = calculate_conversion_at_time(t_eval, k, C_A0, C_B0, order, stoichiometry, excess_B)
+        X_A_eval = calculate_conversion_at_time(t_eval, k, C_A0, C_B0, order, stoichiometry, excess_B, X_eq)
         t_final = t_reaction_det
     else:
         print("calcular tiempo a partir de conversion deseada:", X_A_desired )
