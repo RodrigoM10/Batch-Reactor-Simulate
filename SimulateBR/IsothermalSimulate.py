@@ -1,6 +1,6 @@
 import numpy as np
-from IsothermalReactor import isothermal_reaction_time, calculate_conversion_at_time
 
+from IsothermalReactor import isothermal_reaction_time, calculate_conversion_at_time
 from RateConstant import calculate_rate_constant
 from Stoichiometry import calculate_concentrations
 

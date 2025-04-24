@@ -2,8 +2,8 @@ import numpy as np
 from scipy.integrate import solve_ivp
 
 from Display import graph_equilibrium_vs_temperature, graph_conversion_with_equilibrium
+from Equilibrium import equilibrium_conversion_calculate, vant_hoff_keq_calculate
 from NonIsotermalReactor import balance_reactor_nonisothermal
-from NonIsothermalEquilibriumConstant import nonIsothermal_equilibrium_conversion_calculate, keq_vanthoff_differential
 from RateConstant import calculate_rate_constant
 from ReactionUtils import reaction_rate
 from Stoichiometry import calculate_concentrations
@@ -32,9 +32,9 @@ def nonisothermal_batch_reactor_simulate(k, C_A0, C_B0, C_I, order, stoichiometr
             r_A = reaction_rate(X_A, k, C_A0, C_B0, order, stoichiometry, excess_B)
 
             if K_eq_ref is not None:
-                K_eq_T = keq_vanthoff_differential(T, T_ref, K_eq_ref, delta_H_rxn)
+                K_eq_T = vant_hoff_keq_calculate(K_eq_ref, T_ref, T, delta_H_rxn)
                 try:
-                    X_eq_T = nonIsothermal_equilibrium_conversion_calculate(K_eq_T, C_A0, C_B0, stoichiometry)
+                    X_eq_T = equilibrium_conversion_calculate(K_eq_T, stoichiometry, C_A0, C_B0)
                     if X_A >= X_eq_T:
                         return 0.0
                 except ValueError:
@@ -47,8 +47,8 @@ def nonisothermal_batch_reactor_simulate(k, C_A0, C_B0, C_I, order, stoichiometr
             X_A = y[0]
             T = T0 + (-delta_H_rxn * X_A) / Cp_total
             try:
-                K_eq_T = keq_vanthoff_differential(T, T_ref, K_eq_ref, delta_H_rxn)
-                X_eq_T = nonIsothermal_equilibrium_conversion_calculate(K_eq_T, C_A0, C_B0, stoichiometry)
+                K_eq_T = vant_hoff_keq_calculate(K_eq_ref, T_ref, T, delta_H_rxn)
+                X_eq_T = equilibrium_conversion_calculate(K_eq_T, stoichiometry, C_A0, C_B0)
                 return X_eq_T - X_A
             except:
                 return 1  # no se activa el evento
@@ -69,8 +69,8 @@ def nonisothermal_batch_reactor_simulate(k, C_A0, C_B0, C_I, order, stoichiometr
         if K_eq_ref is not None:
             T_range = np.linspace(T_ref, max(T_eval) * 1.5, 100)
             X_eq_range = [
-                nonIsothermal_equilibrium_conversion_calculate(
-                    keq_vanthoff_differential(T, T_ref, K_eq_ref, delta_H_rxn), C_A0, C_B0, stoichiometry)
+                equilibrium_conversion_calculate(
+                    vant_hoff_keq_calculate(K_eq_ref, T_ref, T, delta_H_rxn), stoichiometry, C_A0, C_B0)
                 for T in T_range]
             graph_equilibrium_vs_temperature(T_range, X_eq_range)
             graph_conversion_with_equilibrium(t_eval, X_A_eval, X_eq_range)
@@ -114,8 +114,8 @@ def nonisothermal_batch_reactor_simulate(k, C_A0, C_B0, C_I, order, stoichiometr
         if K_eq_ref is not None:
             T_range = np.linspace(min(T_eval), max(T_eval) * 1.5, 100)
             X_eq_din_range = [
-                nonIsothermal_equilibrium_conversion_calculate(
-                    keq_vanthoff_differential(T, T_ref, K_eq_ref, delta_H_rxn), C_A0, C_B0, stoichiometry
+                equilibrium_conversion_calculate(
+                    vant_hoff_keq_calculate(K_eq_ref, T_ref, T, delta_H_rxn), stoichiometry, C_A0, C_B0
                 ) for T in T_eval
             ]
             graph_equilibrium_vs_temperature(T_range, X_eq_din_range)

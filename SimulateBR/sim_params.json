@@ -1,0 +1,43 @@
+{
+    "mode_op": "non-isothermal",
+    "k_eq_method": "vant_hoff",
+    "K_eq_direct": null,
+    "K_det": null,
+    "T_iso": null,
+    "A": 756.07,
+    "E": 10000,
+    "option": null,
+    "X_A_desired": null,
+    "t_reaction_det": null,
+    "C_A0": 1,
+    "C_B0": null,
+    "C_I": 1,
+    "order": 1,
+    "stoichiometry": {
+        "A": -1,
+        "C": 1
+    },
+    "excess_B": false,
+    "ans_volume": null,
+    "P_k": null,
+    "t_c_d": null,
+    "t_m": null,
+    "product_k": null,
+    "m_k": null,
+    "T_ref": 298,
+    "T0": 480,
+    "K_eq_ref": 75000,
+    "delta_H_rxn": -14000,
+    "DG_dict": null,
+    "C_p_dict": {
+        "A": 25,
+        "C": 25,
+        "I": 50
+    },
+    "mode_energy": "adiabatic",
+    "U": null,
+    "A_ICQ": null,
+    "T_cool": null,
+    "m_c": null,
+    "Cp_ref": null
+}

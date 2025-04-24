@@ -1,9 +1,9 @@
 import numpy as np
 
-from NonIsothermalEquilibriumConstant import keq_vanthoff_differential, \
-    nonIsothermal_equilibrium_conversion_calculate
+
 from RateConstant import calculate_rate_constant
 from ReactionUtils import reaction_rate
+from Equilibrium import equilibrium_conversion_calculate, vant_hoff_keq_calculate
 
 
 def balance_reactor_nonisothermal(t, y, k, A, C_A0, C_B0, C_I, order, stoichiometry, excess_B,
@@ -32,10 +32,10 @@ def balance_reactor_nonisothermal(t, y, k, A, C_A0, C_B0, C_I, order, stoichiome
     r_A = reaction_rate(X_A, k, C_A0, C_B0, order, stoichiometry, excess_B)
 
     if K_eq_ref is not None:
-        K_eq_T = keq_vanthoff_differential(T, T_ref, K_eq_ref, delta_H_rxn)
+        K_eq_T = vant_hoff_keq_calculate(K_eq_ref, T_ref, T, delta_H_rxn)
 
         try:
-            X_eq_T = nonIsothermal_equilibrium_conversion_calculate(K_eq_T, C_A0, C_B0, stoichiometry)
+            X_eq_T = equilibrium_conversion_calculate(K_eq_T, stoichiometry, C_A0, C_B0)
             if X_A >= X_eq_T:
                 return [0.0, 0.0]
         except ValueError:
