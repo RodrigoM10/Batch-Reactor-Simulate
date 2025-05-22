@@ -1,8 +1,8 @@
 import numpy as np
 
-from IsothermalReactor import isothermal_reaction_time, calculate_conversion_at_time
-from RateConstant import calculate_rate_constant
-from Stoichiometry import calculate_concentrations
+from SimulateBR.IsothermalReactor import isothermal_reaction_time, calculate_conversion_at_time
+from SimulateBR.RateConstant import calculate_rate_constant
+from SimulateBR.Stoichiometry import calculate_concentrations
 
 
 def isothermal_batch_reactor_simulate(C_A0, C_B0, order, stoichiometry, excess_B,X_eq,
@@ -20,7 +20,7 @@ def isothermal_batch_reactor_simulate(C_A0, C_B0, order, stoichiometry, excess_B
         print("calcular tiempo a partir de conversion deseada:", X_A_desired )
         t_eval, X_A_eval = isothermal_reaction_time(k, C_A0, C_B0, X_A_desired, order, stoichiometry, excess_B)
         t_final = t_eval[-1]
-
+    print(X_A_eval)
     concentrations = calculate_concentrations(C_A0, C_B0, X_A_eval, stoichiometry)
 
     return t_eval, X_A_eval, concentrations, t_final, k

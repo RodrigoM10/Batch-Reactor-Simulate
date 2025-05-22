@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from ReactionUtils import reaction_rate
+from SimulateBR.ReactionUtils import reaction_rate
 from SimulateBR.RateConstant import calculate_rate_constant
 
 def graph_equilibrium_temperature_plot(T_range, X_eq_values):
@@ -122,7 +122,7 @@ def graph_concentrations(t_eval, concentrations):
 def graph_inverse_rate(X_A, k, C_A0, C_B0, order, stoichiometry,excess_B):
 
     inverse_rate = [1 / reaction_rate(x, k, C_A0, C_B0, order, stoichiometry,excess_B) for x in X_A]
-
+    
     plt.figure()
     plt.plot(X_A, inverse_rate, label="1/r_A vs X_A", color='purple')
     plt.xlabel('Conversión X_A')
@@ -171,14 +171,7 @@ def graph_conversion_vs_temperature(X_A_eval, T_eval):
     plt.show()
 
 
-def graph_heat_rates(t_eval, X_A_eval, T_eval, A, E, T_ref, delta_H_rxn, C_A0, C_B0, order, stoichiometry, excess_B,
-                     U, A_ICQ, T_cool, m_c, Cp_ref):
-
-    k_eval = [calculate_rate_constant(A=A, E=E, T=T, T_ref=T_ref) for T in T_eval]
-    r_A = [reaction_rate(x, k, C_A0, C_B0, order, stoichiometry, excess_B) for x, k in zip(X_A_eval, k_eval)]
-
-    Qgb_eval = np.array([-delta_H_rxn * r for r in r_A])
-    Qrb_eval = np.array([(m_c * Cp_ref) * ((T - T_cool) * (1 - np.exp((-U * A_ICQ) / (m_c * Cp_ref)))) for T in T_eval])
+def graph_heat_rates(t_eval, Qgb_eval, Qrb_eval):
 
     plt.figure(figsize=(8, 5))
     plt.plot(np.array(t_eval) / 60, Qgb_eval, label='Qg (cal/s)', color='gray')
@@ -190,6 +183,7 @@ def graph_heat_rates(t_eval, X_A_eval, T_eval, A, E, T_ref, delta_H_rxn, C_A0, C
     plt.grid(True)
     plt.tight_layout()
     plt.show()
+
 
 def concentration_time_table(t_eval, concentrations, stoichiometry, t_final):
     # ⚙️ Paso 1: generar hasta 10 tiempos uniformemente espaciados y redondearlos

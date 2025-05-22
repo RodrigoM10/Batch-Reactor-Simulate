@@ -1,8 +1,7 @@
 import numpy as np
 from scipy.optimize import brentq
 
-from Display import graph_equilibrium_line
-from Stoichiometry import calculate_concentrations
+from SimulateBR.Stoichiometry import calculate_concentrations
 
 R = 1.987  # Constante R en cal/(mol·K)
 
@@ -41,7 +40,7 @@ def calculate_keq_auto(sim_params, T=None):
     method = sim_params.get("k_eq_method")
     T_op = T if T is not None else sim_params.get("T_iso")
 
-    if method == "directa":
+    if method == "direct":
         return sim_params["K_eq_direct"]
 
     elif method == "vant_hoff":

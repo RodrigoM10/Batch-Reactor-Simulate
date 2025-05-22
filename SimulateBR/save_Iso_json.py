@@ -30,7 +30,7 @@ sim_params = {
     "K_eq_ref": 75000,
     "delta_H_rxn": -14000,
     "DG_dict": {"A": -47860, "B": -46040, "C": -94630, "D": 0},
-    "C_p_dict": {"A": 35, "B": 18, "C": 46, "I": 19.5},
+    "C_p_dict": None,
 
     "mode_energy": None,
 

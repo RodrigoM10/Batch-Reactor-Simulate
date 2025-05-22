@@ -1,9 +1,9 @@
 import numpy as np
 
 
-from RateConstant import calculate_rate_constant
-from ReactionUtils import reaction_rate
-from Equilibrium import equilibrium_conversion_calculate, vant_hoff_keq_calculate
+from SimulateBR.RateConstant import calculate_rate_constant
+from SimulateBR.ReactionUtils import reaction_rate
+from SimulateBR.Equilibrium import equilibrium_conversion_calculate, vant_hoff_keq_calculate
 
 
 def balance_reactor_nonisothermal(t, y, k, A, C_A0, C_B0, C_I, order, stoichiometry, excess_B,
@@ -22,7 +22,7 @@ def balance_reactor_nonisothermal(t, y, k, A, C_A0, C_B0, C_I, order, stoichiome
     Cp_total = Cps * C_A0
 
     X_A, T = y
-    # Limitar X_A dentro del rango físico permitido
+    # LimiEtar X_A dentro del rango físico permitido
     X_A = min(max(X_A, 0.0), 1.0)
 
     if A is None:

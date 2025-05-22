@@ -1,12 +1,12 @@
 import numpy as np
 from scipy.integrate import solve_ivp
 
-from Display import graph_equilibrium_vs_temperature, graph_conversion_with_equilibrium
-from Equilibrium import equilibrium_conversion_calculate, vant_hoff_keq_calculate
-from NonIsotermalReactor import balance_reactor_nonisothermal
-from RateConstant import calculate_rate_constant
-from ReactionUtils import reaction_rate
-from Stoichiometry import calculate_concentrations
+from SimulateBR.Display import graph_equilibrium_vs_temperature, graph_conversion_with_equilibrium
+from SimulateBR.Equilibrium import equilibrium_conversion_calculate, vant_hoff_keq_calculate
+from SimulateBR.NonIsotermalReactor import balance_reactor_nonisothermal
+from SimulateBR.RateConstant import calculate_rate_constant
+from SimulateBR.ReactionUtils import reaction_rate
+from SimulateBR.Stoichiometry import calculate_concentrations
 
 
 def nonisothermal_batch_reactor_simulate(k, C_A0, C_B0, C_I, order, stoichiometry, excess_B,

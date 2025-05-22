@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.integrate import quad, solve_ivp
 
-from ReactionUtils import balance_reactor, reaction_rate
+from SimulateBR.ReactionUtils import balance_reactor, reaction_rate
 
 
 def isothermal_reaction_time(k, C_A0, C_B0, X_A_desired, order, stoichiometry,excess_B):
