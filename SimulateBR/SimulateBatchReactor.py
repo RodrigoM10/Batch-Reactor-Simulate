@@ -27,27 +27,42 @@ def simulate_batch_reactor(sim_params: dict):
     }
 
     if mode == "isothermal":
-        C_A0 = sim_params["C_A0"]
-        C_B0 = sim_params["C_B0"]
+        try:
+            # Conversión segura de parámetros numéricos
+            C_A0 = float(sim_params.get("C_A0", 0))
+            C_B0 = float(sim_params.get("C_B0", 0))
+            C_C0 = float(sim_params.get("C_C0", 0))
+            C_D0 = float(sim_params.get("C_D0", 0))
+
+        except (TypeError, ValueError) as e:
+            resultado["message"] = f"Error en parámetros iniciales de concentración: {e}"
+            return resultado
+
         order = sim_params["order"]
         stoichiometry = sim_params["stoichiometry"]
         excess_B = sim_params["excess_B"]
-
-        print("\n--- Cálculo de K_eq ---")
-        K_eq = calculate_keq_auto(sim_params)
-        print(f"✅ K_eq calculado automáticamente: {K_eq:.4f}")
-        X_eq = equilibrium_conversion_calculate(K_eq, stoichiometry, C_A0, C_B0)
-        print(f"✅ Conversión de equilibrio calculada: X_eq = {X_eq:.3f}")
+        reversible = sim_params["reversible"]
 
         K_det = sim_params["K_det"]
         if K_det is not None:
             k = K_det
-            A = E = T = None
+            A = E = None
+            T = sim_params["T_iso"]
         else:
             A = sim_params["A"]
             E = sim_params["E"]
             T = sim_params["T_iso"]
             k = None
+
+        K_eq = None
+        X_eq = None
+
+        if reversible:
+            print("\n--- Cálculo de K_eq ---")
+            K_eq = calculate_keq_auto(sim_params)
+            print(f"✅ K_eq calculado automáticamente: {K_eq:.4f}")
+            X_eq = equilibrium_conversion_calculate(K_eq, stoichiometry, C_A0, C_B0, C_C0, C_D0)
+            print(f"✅ Conversión de equilibrio calculada: X_eq = {X_eq:.3f}")
 
         option = sim_params["option"].strip().upper()
         if option == "X":
@@ -72,9 +87,10 @@ def simulate_batch_reactor(sim_params: dict):
             raise ValueError("Opción inválida")
 
         t_eval, X_A_eval, concentrations, t_final, k = isothermal_batch_reactor_simulate(
-            k=k, C_A0=C_A0, C_B0=C_B0, order=order,
+            k=k, C_A0=C_A0, C_B0=C_B0, C_C0=C_C0, C_D0=C_D0, order=order,
             stoichiometry=stoichiometry, excess_B=excess_B, X_eq=X_eq,
-            A=A, E=E, T=T, X_A_desired=X_A_desired, t_reaction_det=t_reaction_det
+            A=A, E=E, T=T, X_A_desired=X_A_desired, t_reaction_det=t_reaction_det,
+            reversible=reversible, Keq=K_eq
         )
 
         graph_conversion(t_eval, X_A_eval, X_eq)
@@ -84,25 +100,20 @@ def simulate_batch_reactor(sim_params: dict):
         if ans_volume == "s":
             try:
                 P_k = sim_params["P_k"]
-                t_c_d = sim_params["t_c_d"]
-                t_m = sim_params["t_m"]
+                t_mcd = sim_params["t_mcd"]
                 product_k = sim_params["product_k"].strip().upper()
-                m_k = sim_params["m_k"]
-
-                if product_k not in stoichiometry:
-                    raise ValueError(f"'{product_k}' no está definido en la estequiometría de la reacción.")
-
-                alpha_k = stoichiometry[product_k]
-                if alpha_k <= 0:
-                    raise ValueError(f"'{product_k}' no es un producto válido (coeficiente debe ser positivo).")
-
-                alpha_X_list = [alpha_k * (X_A_desired if X_A_desired is not None else X_A_eval[-1])]
-
-                V = calculate_batch_reactor_volume(P_k, m_k, alpha_X_list, t_final, t_c_d, t_m)
+                m_k = sim_params["m_k"]/1000
+                C_k_final = concentrations[product_k][-1]  # Última concentración simulada del producto
+                if C_k_final <= 0:
+                    raise ValueError(f"La concentración final del producto '{product_k}' no puede ser cero o negativa.")
+                V = calculate_batch_reactor_volume(
+                    P_k,
+                    m_k,
+                    C_k_final,
+                    t_final,
+                    t_mcd
+                )
                 print(f"✅ Volumen necesario del reactor: {V:.2f} L")
-
-                graph_inverse_rate(X_A_eval, k, C_A0, C_B0, order, stoichiometry, excess_B)
-
             except Exception as e:
                 print(f"❌ Error calculando volumen: {e}")
 
@@ -111,11 +122,12 @@ def simulate_batch_reactor(sim_params: dict):
 
         resultado["success"] = True
         resultado["summary"] = {
-            "t_final": t_final,
-            "X_A_final": X_A_eval[-1],
+            "t_final": round(t_final, 2),
+            "X_A_final": round(float(X_A_eval[-1]), 2),
             "k_final": k,
-            "T_final": None,
-            "volume": V
+            "T_final": round(T, 2) if T is not None else None,
+            "volume": round(V, 2) if V is not None else None,
+            "X_eq": round(X_eq, 2) if X_eq is not None else None
         }
         resultado["data"] = {
             "t_eval": t_eval,
@@ -126,10 +138,19 @@ def simulate_batch_reactor(sim_params: dict):
         resultado["message"] = "Simulación isotérmica completada."
 
     elif mode == "non-isothermal":
-        C_A0 = sim_params["C_A0"]
-        C_B0 = sim_params["C_B0"]
-        C_I = sim_params["C_I"]
+        try:
+            # Conversión segura de parámetros numéricos
+            C_A0 = float(sim_params.get("C_A0", 0))
+            C_B0 = float(sim_params.get("C_B0", 0))
+            C_C0 = float(sim_params.get("C_C0", 0))
+            C_D0 = float(sim_params.get("C_D0", 0))
+            C_I = float(sim_params.get("C_I", 0))
+        except (TypeError, ValueError) as e:
+            resultado["message"] = f"Error en parámetros iniciales de concentración: {e}"
+            return resultado
+
         order = sim_params["order"]
+        reversible = sim_params["reversible"]
         stoichiometry = sim_params["stoichiometry"]
         excess_B = sim_params["excess_B"]
         k = None
@@ -141,7 +162,7 @@ def simulate_batch_reactor(sim_params: dict):
         T0 = sim_params["T0"]
         delta_H_rxn = sim_params["delta_H_rxn"]
         C_p_dict = sim_params["C_p_dict"]
-        mode_energy = sim_params["mode_energy"]
+        mode_energy = sim_params["mode_energy"].strip().lower()
         U = sim_params["U"]
         A_ICQ = sim_params["A_ICQ"]
         T_cool = sim_params["T_cool"]
@@ -151,9 +172,9 @@ def simulate_batch_reactor(sim_params: dict):
         Qrb_eval = None
 
         t_eval, X_A_eval, T_eval, concentrations, t_final, k_final, Ta2 = nonisothermal_batch_reactor_simulate(
-            k, C_A0, C_B0, C_I, order, stoichiometry, excess_B,
+            k, C_A0, C_B0, C_C0, C_D0, C_I, order, reversible, stoichiometry, excess_B,
             A, E, T0, T_ref, delta_H_rxn, C_p_dict, K_eq_ref,
-            mode_energy, U, A_ICQ, T_cool, m_c, Cp_ref
+            mode_energy, U, A_ICQ, T_cool, m_c, Cp_ref, sim_params=sim_params
         )
 
         graph_temperature(t_eval, T_eval, Ta2)
@@ -161,10 +182,12 @@ def simulate_batch_reactor(sim_params: dict):
         if mode_energy == "adiabatic":
             graph_conversion_vs_temperature(X_A_eval, T_eval)
         elif mode_energy == "icq":
+
             try:
                 Qgb_eval, Qrb_eval = heat_rates_calculate(
-                     X_A_eval, T_eval, A, E, T_ref, delta_H_rxn,
-                    C_A0, C_B0, order, stoichiometry, excess_B,
+                    X_A_eval, T_eval, A, E, T_ref, delta_H_rxn,
+                    C_A0, C_B0, C_C0, C_D0, order, stoichiometry, excess_B, reversible,
+                    sim_params,
                     U, A_ICQ, T_cool, m_c, Cp_ref
                 )
                 graph_heat_rates(t_eval, Qgb_eval, Qrb_eval)

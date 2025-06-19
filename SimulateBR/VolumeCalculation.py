@@ -1,16 +1,20 @@
-def calculate_batch_reactor_volume(P_k, m_k, alpha_X_list, t_reaccion, t_carga_descarga, t_muerto):
-    alpha_X_sum = sum(alpha_X_list)
+def calculate_batch_reactor_volume(P_k, m_k, C_P, t_reaccion, t_mcd):
+    """
+    Calcula el volumen del reactor (en litros) usando concentración final del producto:
+    V = (P_k * (t_reaccion + t_mcd)) / (C_P * m_k)
 
-    if alpha_X_sum <= 0:
-        raise ValueError("La suma de α_ik * X_i debe ser mayor que cero.")
+    - P_k: producción deseada del producto [kg]
+    - m_k: masa molar del producto [kg/mol]
+    - C_P: concentración final del producto [mol/L]
+    - t_reaccion: tiempo de reacción [min]
+    - t_mcd: tiempo de carga/descarga/muerto [min]
+    """
+    if C_P <= 0 or m_k <= 0:
+        raise ValueError("C_P y m_k deben ser mayores a cero.")
 
-    T_op = t_carga_descarga + t_reaccion + t_muerto
-
+    T_op = t_reaccion + t_mcd
     if T_op <= 0:
-        raise ValueError("El tiempo total de operación debe ser mayor que cero.")
+        raise ValueError("Tiempo total inválido.")
 
-    P_k_mol = P_k / m_k
-
-    V = (P_k_mol * T_op) / alpha_X_sum
-
+    V = (P_k * T_op) / (C_P * m_k)  # (kg/min * min) / (mol/l * kg/mol) resultado en Litros
     return V

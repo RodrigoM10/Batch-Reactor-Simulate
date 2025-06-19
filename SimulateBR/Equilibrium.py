@@ -5,21 +5,19 @@ from SimulateBR.Stoichiometry import calculate_concentrations
 
 R = 1.987  # Constante R en cal/(mol·K)
 
-
 def vant_hoff_keq_calculate(K_eq_ref, T_ref, T, delta_H_rxn):
     K_eq = K_eq_ref * np.exp(delta_H_rxn / R * (1 / T_ref - 1 / T))
     return K_eq
-
 
 def gibbs_keq_calculate(DG_dict, stoichiometry, T):
     delta_G_rxn_0 = sum(DG_dict.get(sp, 0) * nu for sp, nu in stoichiometry.items())
     return np.exp(-delta_G_rxn_0 / (R * T))
 
 
-def equilibrium_conversion_calculate(K_eq, stoichiometry, C_A0, C_B0):
+def equilibrium_conversion_calculate(K_eq, stoichiometry, C_A0, C_B0, C_C0, C_D0):
 
     def equilibrium_function(X):
-        C_dict = calculate_concentrations(C_A0, C_B0, X, stoichiometry)
+        C_dict = calculate_concentrations(C_A0, C_B0,C_C0,C_D0, X, stoichiometry)
         num = 1.0  # productos
         den = 1.0  # reactivos
         for esp, nu in stoichiometry.items():

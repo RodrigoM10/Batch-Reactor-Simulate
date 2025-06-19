@@ -92,13 +92,7 @@ def graph_conversion_with_equilibrium(t_eval, X_A_eval, X_eq_range):
     plt.show()
 
 def graph_concentrations(t_eval, concentrations):
-    """
-    Grafica las concentraciones de todos los componentes en función del tiempo.
 
-    Parámetros:
-        t_eval       -> Lista de tiempos evaluados.
-        concentrations -> Diccionario con listas de concentraciones de A, B, C y D.
-    """
     plt.figure()
 
     if concentrations["A"] is not None:
@@ -119,10 +113,15 @@ def graph_concentrations(t_eval, concentrations):
 
 
 # Grafica exclusiva para modo isotermico
-def graph_inverse_rate(X_A, k, C_A0, C_B0, order, stoichiometry,excess_B):
+def graph_inverse_rate(X_A, k, C_A0, C_B0, C_C0, C_D0, order, stoichiometry, excess_B, reversible=False, Keq=None):
+    inverse_rate = []
+    for x in X_A:
+        try:
+            r = reaction_rate(x, k, C_A0, C_B0, C_C0, C_D0, order, stoichiometry, excess_B, reversible, Keq)
+            inverse_rate.append(1 / r if r > 0 else float('inf'))
+        except Exception:
+            inverse_rate.append(float('inf'))
 
-    inverse_rate = [1 / reaction_rate(x, k, C_A0, C_B0, order, stoichiometry,excess_B) for x in X_A]
-    
     plt.figure()
     plt.plot(X_A, inverse_rate, label="1/r_A vs X_A", color='purple')
     plt.xlabel('Conversión X_A')

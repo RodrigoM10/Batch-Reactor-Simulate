@@ -4,37 +4,49 @@ from scipy.integrate import quad, solve_ivp
 from SimulateBR.ReactionUtils import balance_reactor, reaction_rate
 
 
-def isothermal_reaction_time(k, C_A0, C_B0, X_A_desired, order, stoichiometry,excess_B):
-
-    # Función interna para evaluar 1/r_A en función de X_A
+def isothermal_reaction_time(k, C_A0, C_B0, C_C0, C_D0, X_A_desired,
+                             order, stoichiometry, excess_B,
+                             reversible=False, Keq=None):
     def integrand(X_A):
-        r_A = reaction_rate(X_A, k, C_A0, C_B0, order, stoichiometry, excess_B)
-        if r_A <= 0 or np.isnan(r_A):
+        try:
+            r_A = reaction_rate(X_A, k, C_A0, C_B0, C_C0, C_D0, order,
+                                stoichiometry, excess_B,
+                                reversible=reversible, Keq=Keq)
+            if r_A <= 0 or np.isnan(r_A):
+                return np.inf
+            return C_A0 / r_A
+        except Exception:
             return np.inf
-        return C_A0 / r_A
 
-    # Generar valores de conversión de 0 a X_A_desired distribuidos uniformemente
+    # Evitamos pasar X_A_desired > 1 o < 0
+    X_A_desired = np.clip(X_A_desired, 0.0, 1.0)
+
     X_A_values = np.linspace(0, X_A_desired, 100)
-
-    # Calcular el tiempo acumulado resolviendo la integral para cada X_A
     t_r_values = []
+
     for x in X_A_values:
         try:
-            # Resolver la integral desde 0 hasta x
             integral_result, _ = quad(integrand, 0, x)
             t_r_values.append(integral_result)
-        except Exception as e:
-            # En caso de falla, manejar valores no integrables
+        except Exception:
             t_r_values.append(np.inf)
 
-    return t_r_values, X_A_values  # Devolvemos tiempos y conversiones correctas
+    return t_r_values, X_A_values
 
-def calculate_conversion_at_time(t_eval, k, C_A0, C_B0, order, stoichiometry, excess_B, X_eq):
+def calculate_conversion_at_time(t_eval, k, C_A0, C_B0, C_C0, C_D0, order,
+                                  stoichiometry, excess_B, X_eq,
+                                  reversible=False, Keq=None):
+    y0 = [0.0] # X_A inicial
 
-    y0 = [0.0]
-    sol = solve_ivp( lambda t, y: balance_reactor(t, y, k, C_A0, C_B0, order, stoichiometry, excess_B),
+    sol = solve_ivp( lambda t, y: balance_reactor(t, y, k, C_A0, C_B0, C_C0, C_D0, order,
+                                                  stoichiometry, excess_B, reversible, Keq),
                      [t_eval[0], t_eval[-1]], y0, t_eval=t_eval,dense_output=True)
-    # Clip para mantener conversiones físicas válidas entre 0 y 1
-    X_A_eval = np.clip(sol.y[0], 0.0, X_eq)
+
+    if reversible:
+        # Clip físico con el límite de equilibrio
+        X_A_eval = np.clip(sol.y[0], 0.0, X_eq)
+    else:
+        # Clip físico sin límite artificial entre 0 y 1
+        X_A_eval = np.clip(sol.y[0], 0.0, 1.0)
 
     return X_A_eval

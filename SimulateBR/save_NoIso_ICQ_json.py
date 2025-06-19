@@ -19,8 +19,7 @@ sim_params = {
     "excess_B": False,
     "ans_volume": None,
     "P_k": None,
-    "t_c_d": None,
-    "t_m": None,
+    "t_mcd": None,
     "product_k": None,
     "m_k": None,
 

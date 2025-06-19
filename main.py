@@ -32,14 +32,16 @@ class SimParams(BaseModel):
     t_reaction_det: Optional[float] = None
     C_A0: Optional[float] = None
     C_B0: Optional[float] = None
+    C_C0: Optional[float] = None
+    C_D0: Optional[float] = None
     C_I: Optional[float] = None
     order: int
+    reversible: bool
     stoichiometry: Dict[str, int]
     excess_B: Optional[bool] = None
     ans_volume: Optional[str] = None
     P_k: Optional[float] = None
-    t_c_d: Optional[float] = None
-    t_m: Optional[float] = None
+    t_mcd: Optional[float] = None
     product_k: Optional[str] = None
     m_k: Optional[float] = None
     T_ref: Optional[float] = None
