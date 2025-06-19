@@ -1,12 +1,16 @@
 import numpy as np
 
-from RateConstant import calculate_rate_constant
-from ReactionUtils import reaction_rate
+
+from SimulateBR.RateConstant import calculate_rate_constant
+from SimulateBR.ReactionUtils import reaction_rate
+from SimulateBR.Equilibrium import equilibrium_conversion_calculate, calculate_keq_auto
 
 
-def balance_reactor_nonisothermal(t, y, k, A, C_A0, C_B0, C_I, order, stoichiometry, excess_B,
-                                  C_p_dict, delta_H_rxn, E, T_ref,
-                                  U=None, A_ICQ=None, T_cool=None, m_c=None, Cp_ref=None):
+def balance_reactor_nonisothermal(t, y, k, A, C_A0, C_B0, C_C0, C_D0, C_I, order, stoichiometry, excess_B,
+                                  C_p_dict, delta_H_rxn, E, T_ref, K_eq_ref,
+                                  U=None, A_ICQ=None, T_cool=None, m_c=None, Cp_ref=None,
+                                  reversible=False, sim_params=None
+                                  ):
     if not isinstance(y, (list, np.ndarray)) or len(y) != 2:
         raise ValueError(
             f"El argumento 'y' debe ser una lista o arreglo con 2 elementos (no {type(y)}: {y})."
@@ -14,22 +18,49 @@ def balance_reactor_nonisothermal(t, y, k, A, C_A0, C_B0, C_I, order, stoichiome
 
     Cps = (
             C_p_dict.get("A", 0) +
-            (C_B0 / C_A0) * C_p_dict.get("B", 0) +
-            (C_I / C_A0) * C_p_dict.get("I", 0)
+            ((C_B0 / C_A0) * C_p_dict.get("B", 0) if C_B0 is not None else 0) +
+            ((C_C0 / C_A0) * C_p_dict.get("C", 0) if C_C0 is not None else 0) +
+            ((C_D0 / C_A0) * C_p_dict.get("D", 0) if C_D0 is not None else 0) +
+            ((C_I / C_A0) * C_p_dict.get("I", 0) if C_I is not None else 0)
     )
     Cp_total = Cps * C_A0
 
     X_A, T = y
-    # Limitar X_A dentro del rango físico permitido
+    # LimiEtar X_A dentro del rango físico permitido
     X_A = min(max(X_A, 0.0), 1.0)
 
     if A is None:
         raise ValueError("El parámetro A (factor preexponencial) es necesario para el cálculo de k.")
     k_T = calculate_rate_constant(A=A, E=E, T=T, T_ref=T_ref)
     k = k_T
-    r_A = reaction_rate(X_A, k, C_A0, C_B0, order, stoichiometry, excess_B)
-    dX_A_dt = r_A / C_A0
 
+    # Calcular Keq si es reversible
+    K_eq_T = None
+    if reversible and sim_params is not None:
+        try:
+            K_eq_T = calculate_keq_auto(sim_params, T)
+        except Exception as e:
+            print(f"⚠️ Error calculando Keq dinámico: {e}")
+
+    # Calcular velocidad de reacción
+    r_A = reaction_rate(
+        X_A, k, C_A0, C_B0, C_C0, C_D0,
+        order, stoichiometry, excess_B,
+        reversible=reversible, Keq=K_eq_T
+    )
+
+    # Freno por equilibrio (opcional)
+    if reversible and K_eq_T is not None:
+        try:
+            X_eq_T = equilibrium_conversion_calculate(
+                K_eq_T, stoichiometry, C_A0, C_B0, C_C0, C_D0
+            )
+            if X_A >= X_eq_T:
+                return [0.0, 0.0]
+        except ValueError:
+            pass
+
+    dX_A_dt = r_A / C_A0
     Q_gb = -delta_H_rxn * r_A
     Q_rb = (m_c * Cp_ref) * ((T - T_cool) * (1 - np.exp((-U * A_ICQ) / (m_c * Cp_ref))))
     dT_dt = (Q_gb - Q_rb) / Cp_total if Cp_total > 0 else 0

@@ -1,0 +1,54 @@
+{
+    "mode_op": "isothermal",
+    "k_eq_method": "direct",
+    "K_eq_direct": 2.93,
+    "K_det": 0.0004758,
+    "T_iso": 373,
+    "A": null,
+    "E": null,
+    "option": "T",
+    "X_A_desired": null,
+    "t_reaction_det": 120,
+    "C_A0": 3.91,
+    "C_B0": 10.18,
+    "C_C0": 0,
+    "C_D0": 17.56,
+    "C_I": 0,
+    "order": 2,
+    "reversible": true,
+    "stoichiometry": {
+        "A": -1,
+        "B": -1,
+        "C": 1,
+        "D": 1
+    },
+    ...
+
+
+
+
+
+    "excess_B": false,
+    "ans_volume": "s",
+    "P_k": 37.72,
+    "t_mcd": 30,
+    "product_k": "C",
+    "m_k": 88,
+    "T_ref": null,
+    "T0": null,
+    "K_eq_ref": null,
+    "delta_H_rxn": null,
+    "DG_dict": {
+        "A": null,
+        "B": null,
+        "C": null,
+        "D": null
+    },
+    "C_p_dict": null,
+    "mode_energy": null,
+    "U": null,
+    "A_ICQ": null,
+    "T_cool": null,
+    "m_c": null,
+    "Cp_ref": null
+}

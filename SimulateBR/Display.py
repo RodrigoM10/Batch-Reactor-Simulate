@@ -1,11 +1,61 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from ReactionUtils import reaction_rate
+from SimulateBR.ReactionUtils import reaction_rate
 from SimulateBR.RateConstant import calculate_rate_constant
 
+def graph_equilibrium_temperature_plot(T_range, X_eq_values):
+    """
+    Gráfico de conversión de equilibrio en función de la temperatura.
 
-def graph_conversion(t_eval, X_A_eval):
+    Parámetros:
+        T_eval       -> Lista de temperaturas evaluadas.
+        X_eq_values   -> Lista de conversiones de equilibrio correspondientes.
+    """
+
+    plt.figure()
+    plt.plot(T_range, X_eq_values, label="X_eq vs T", color="green")
+    plt.xlabel("Temperatura (K)")
+    plt.ylabel("Conversión de equilibrio X_eq")
+    plt.title("Conversión de equilibrio en función de la temperatura")
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+def graph_equilibrium_line(X_eq, T_op):
+    """
+    Dibuja una línea horizontal mostrando X_eq en función de T constante.
+
+    Parámetros:
+        X_eq         -> Valor de conversión de equilibrio (constante).
+        T_op  -> Temperatura de operación (solo para mostrar en el título).
+    """
+    plt.figure()
+    plt.axhline(y=X_eq, color='green', linestyle='--', label=f"X_eq = {X_eq:.3f}")
+    plt.xlabel("Tiempo o Variable independiente")
+    plt.ylabel("Conversión X_A")
+    plt.title(f"Conversión de Equilibrio a T = {T_op} K")
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+def graph_equilibrium_vs_temperature(T_range, X_eq_range):
+    """
+    Gráfico de conversión de equilibrio X_eq en función de la temperatura.
+    """
+    plt.figure()
+    plt.plot(T_range, X_eq_range, label="X_eq vs T", color="green")
+    plt.xlabel("Temperatura (K)")
+    plt.ylabel("Conversión de equilibrio X_eq")
+    plt.title("Conversión de equilibrio en función de la temperatura")
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+def graph_conversion(t_eval, X_A_eval, X_eq=None):
     """
     Grafica la conversión del reactivo limitante en función del tiempo.
 
@@ -14,7 +64,11 @@ def graph_conversion(t_eval, X_A_eval):
         X_A_eval  -> Lista de valores de conversión del reactivo limitante.
     """
     plt.figure()
-    plt.plot(t_eval, X_A_eval, label='Conversión de A', color='b')
+    plt.plot(t_eval, X_A_eval, label=f'Conversión de A = {X_A_eval[-1]:.2f}', color='b')
+
+    if X_eq is not None:
+        plt.axhline(y=X_eq, color='r', linestyle='--', label=f'Conversion de Equilibrio = {X_eq:.2f}')
+
     plt.xlabel('Tiempo (min)')
     plt.ylabel('Conversión X_A')
     plt.legend()
@@ -22,14 +76,23 @@ def graph_conversion(t_eval, X_A_eval):
     plt.title("Conversión de A vs. Tiempo")
     plt.show()
 
-def graph_concentrations(t_eval, concentrations):
+def graph_conversion_with_equilibrium(t_eval, X_A_eval, X_eq_range):
     """
-    Grafica las concentraciones de todos los componentes en función del tiempo.
+    Gráfica la conversión de A y la conversión de equilibrio (en función del tiempo).
+    """
+    plt.figure()
+    plt.plot(t_eval, X_A_eval, label="Conversión de A", color="blue")
+    plt.plot(t_eval, X_eq_range[:len(t_eval)], '--', label="Conversión de equilibrio", color="red")
+    plt.xlabel("Tiempo (min)")
+    plt.ylabel("Conversión X_A")
+    plt.title("Conversión vs. Tiempo con equilibrio")
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
 
-    Parámetros:
-        t_eval       -> Lista de tiempos evaluados.
-        concentrations -> Diccionario con listas de concentraciones de A, B, C y D.
-    """
+def graph_concentrations(t_eval, concentrations):
+
     plt.figure()
 
     if concentrations["A"] is not None:
@@ -50,9 +113,14 @@ def graph_concentrations(t_eval, concentrations):
 
 
 # Grafica exclusiva para modo isotermico
-def graph_inverse_rate(X_A, k, C_A0, C_B0, order, stoichiometry,excess_B):
-
-    inverse_rate = [1 / reaction_rate(x, k, C_A0, C_B0, order, stoichiometry,excess_B) for x in X_A]
+def graph_inverse_rate(X_A, k, C_A0, C_B0, C_C0, C_D0, order, stoichiometry, excess_B, reversible=False, Keq=None):
+    inverse_rate = []
+    for x in X_A:
+        try:
+            r = reaction_rate(x, k, C_A0, C_B0, C_C0, C_D0, order, stoichiometry, excess_B, reversible, Keq)
+            inverse_rate.append(1 / r if r > 0 else float('inf'))
+        except Exception:
+            inverse_rate.append(float('inf'))
 
     plt.figure()
     plt.plot(X_A, inverse_rate, label="1/r_A vs X_A", color='purple')
@@ -66,29 +134,29 @@ def graph_inverse_rate(X_A, k, C_A0, C_B0, order, stoichiometry,excess_B):
 
 # Graficas para modo no isotermico
 def graph_temperature(t_eval, T_eval, Ta2=None):
+    import matplotlib.pyplot as plt
+    import numpy as np
+
     plt.figure()
     plt.plot(t_eval, T_eval, label='T (K)', color='r')
+
     if Ta2 is not None:
-        plt.plot(np.array(t_eval), Ta2, label='Ta2 (K)', linestyle='--')
+        plt.plot(t_eval, Ta2, label='Ta2 (K)', linestyle='--')
 
     plt.xlabel("Tiempo (s)")
     plt.ylabel("Temperatura (K)")
-    if Ta2 is not None:
-        plt.title("Evolución de la Temperatura del reactor y del refrigerante")
-    else:
-        plt.title("Evolucion de la Temperatura del reactor")
+    plt.title("Evolución de la Temperatura" + (" y del refrigerante" if Ta2 is not None else ""))
     plt.legend()
     plt.grid(True)
 
-    # Definir saltos ajustables según duración
+    # Distribución de ticks más estética
     max_t = max(t_eval)
-    salto = max(100, int(max_t // 10))  # 10 ticks aproximadamente
+    salto = max_t / 10  # dividir en 10 partes iguales
     ticks_x = np.arange(0, max_t + salto, salto)
     plt.xticks(ticks_x)
+
     plt.tight_layout()
     plt.show()
-
-
 
 
 def graph_conversion_vs_temperature(X_A_eval, T_eval):
@@ -102,14 +170,7 @@ def graph_conversion_vs_temperature(X_A_eval, T_eval):
     plt.show()
 
 
-def graph_heat_rates(t_eval, X_A_eval, T_eval, A, E, T_ref, delta_H_rxn, C_A0, C_B0, order, stoichiometry, excess_B,
-                     U, A_ICQ, T_cool, m_c, Cp_ref):
-
-    k_eval = [calculate_rate_constant(A=A, E=E, T=T, T_ref=T_ref) for T in T_eval]
-    r_A = [reaction_rate(x, k, C_A0, C_B0, order, stoichiometry, excess_B) for x, k in zip(X_A_eval, k_eval)]
-
-    Qgb_eval = np.array([-delta_H_rxn * r for r in r_A])
-    Qrb_eval = np.array([(m_c * Cp_ref) * ((T - T_cool) * (1 - np.exp((-U * A_ICQ) / (m_c * Cp_ref)))) for T in T_eval])
+def graph_heat_rates(t_eval, Qgb_eval, Qrb_eval):
 
     plt.figure(figsize=(8, 5))
     plt.plot(np.array(t_eval) / 60, Qgb_eval, label='Qg (cal/s)', color='gray')
@@ -121,6 +182,7 @@ def graph_heat_rates(t_eval, X_A_eval, T_eval, A, E, T_ref, delta_H_rxn, C_A0, C
     plt.grid(True)
     plt.tight_layout()
     plt.show()
+
 
 def concentration_time_table(t_eval, concentrations, stoichiometry, t_final):
     # ⚙️ Paso 1: generar hasta 10 tiempos uniformemente espaciados y redondearlos
