@@ -1,14 +1,4 @@
 import numpy as np
-
-from SimulateBR.Display import (
-    graph_conversion,
-    graph_concentrations,
-    graph_inverse_rate,
-    graph_temperature,
-    graph_conversion_vs_temperature,
-    concentration_time_table,
-    graph_heat_rates
-)
 from SimulateBR.Equilibrium import calculate_keq_auto, equilibrium_conversion_calculate
 from SimulateBR.HeatRatesCalculate import heat_rates_calculate
 from SimulateBR.IsothermalSimulate import isothermal_batch_reactor_simulate
@@ -92,9 +82,6 @@ def simulate_batch_reactor(sim_params: dict):
             A=A, E=E, T=T, X_A_desired=X_A_desired, t_reaction_det=t_reaction_det,
             reversible=reversible, Keq=K_eq
         )
-
-        graph_conversion(t_eval, X_A_eval, X_eq)
-
         ans_volume = sim_params.get("ans_volume", "n").strip().lower()
         V = None
         if ans_volume == "s":
@@ -116,9 +103,6 @@ def simulate_batch_reactor(sim_params: dict):
                 print(f"✅ Volumen necesario del reactor: {V:.2f} L")
             except Exception as e:
                 print(f"❌ Error calculando volumen: {e}")
-
-        graph_concentrations(t_eval, concentrations)
-        concentration_time_table(t_eval, concentrations, stoichiometry, t_final)
 
         resultado["success"] = True
         resultado["summary"] = {
@@ -176,26 +160,6 @@ def simulate_batch_reactor(sim_params: dict):
             A, E, T0, T_ref, delta_H_rxn, C_p_dict, K_eq_ref,
             mode_energy, U, A_ICQ, T_cool, m_c, Cp_ref, sim_params=sim_params
         )
-
-        graph_temperature(t_eval, T_eval, Ta2)
-
-        if mode_energy == "adiabatic":
-            graph_conversion_vs_temperature(X_A_eval, T_eval)
-        elif mode_energy == "icq":
-
-            try:
-                Qgb_eval, Qrb_eval = heat_rates_calculate(
-                    X_A_eval, T_eval, A, E, T_ref, delta_H_rxn,
-                    C_A0, C_B0, C_C0, C_D0, order, stoichiometry, excess_B, reversible,
-                    sim_params,
-                    U, A_ICQ, T_cool, m_c, Cp_ref
-                )
-                graph_heat_rates(t_eval, Qgb_eval, Qrb_eval)
-            except Exception as e:
-                print(f"❌ Error Calculo de Calor Generado: {e}")
-
-        graph_concentrations(t_eval, concentrations)
-        concentration_time_table(t_eval, concentrations, stoichiometry, t_final)
 
         resultado["success"] = True
         resultado["summary"] = {

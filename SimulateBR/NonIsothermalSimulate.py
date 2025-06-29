@@ -1,13 +1,11 @@
 import numpy as np
 from scipy.integrate import solve_ivp
 
-from SimulateBR.Display import graph_equilibrium_vs_temperature, graph_conversion_with_equilibrium
 from SimulateBR.Equilibrium import equilibrium_conversion_calculate, vant_hoff_keq_calculate, calculate_keq_auto
 from SimulateBR.NonIsotermalReactor import balance_reactor_nonisothermal
 from SimulateBR.RateConstant import calculate_rate_constant
 from SimulateBR.ReactionUtils import reaction_rate
 from SimulateBR.Stoichiometry import calculate_concentrations
-
 
 def nonisothermal_batch_reactor_simulate(k, C_A0, C_B0, C_C0, C_D0, C_I, order, reversible, stoichiometry, excess_B,
                                          A, E, T0, T_ref, delta_H_rxn, C_p_dict, K_eq_ref,
@@ -20,7 +18,6 @@ def nonisothermal_batch_reactor_simulate(k, C_A0, C_B0, C_C0, C_D0, C_I, order, 
                 ((C_D0 / C_A0) * C_p_dict.get("D", 0) if C_D0 is not None else 0) +
                 ((C_I / C_A0) * C_p_dict.get("I", 0) if C_I is not None else 0)
         )
-
         def dX_dt(t, y):
             X_A = max(0.0, min(1.0, y[0]))
             T = T0 + (-delta_H_rxn * X_A) / Cp_total
@@ -29,8 +26,6 @@ def nonisothermal_batch_reactor_simulate(k, C_A0, C_B0, C_C0, C_D0, C_I, order, 
             K_eq_T = None
             if reversible and K_eq_ref is not None:
                 K_eq_T = calculate_keq_auto(sim_params, T=T)
-                #K_eq_T = vant_hoff_keq_calculate(K_eq_ref, T_ref, T, delta_H_rxn)
-
                 try:
                     X_eq_T = equilibrium_conversion_calculate(K_eq_T, stoichiometry, C_A0, C_B0, C_C0, C_D0)
                     if X_A >= X_eq_T:
@@ -74,19 +69,6 @@ def nonisothermal_batch_reactor_simulate(k, C_A0, C_B0, C_C0, C_D0, C_I, order, 
         concentrations = calculate_concentrations(C_A0, C_B0, C_C0, C_D0, X_A_eval, stoichiometry)
         Ta2 = None
 
-        # Graficar si es reversible
-        if reversible and K_eq_ref is not None:
-            T_range = np.linspace(T_ref, max(T_eval) * 1.5, 100)
-            X_eq_range = [
-                equilibrium_conversion_calculate(
-                    vant_hoff_keq_calculate(K_eq_ref, T_ref, T, delta_H_rxn),
-                    stoichiometry, C_A0, C_B0, C_C0, C_D0
-                )
-                for T in T_range
-            ]
-            graph_equilibrium_vs_temperature(T_range, X_eq_range)
-            graph_conversion_with_equilibrium(t_eval, X_A_eval, X_eq_range)
-
         return t_eval, X_A_eval, T_eval, concentrations, sol.t[-1], k_final, Ta2
 
     else:
@@ -126,23 +108,5 @@ def nonisothermal_batch_reactor_simulate(k, C_A0, C_B0, C_C0, C_D0, C_I, order, 
         T_final = T_eval[-1]
         k_final = calculate_rate_constant(A=A, E=E, T=T_final, T_ref=T_ref)
         Ta2 = T_eval - (T_eval - T_cool) * np.exp(-U * A_ICQ / (m_c * Cp_ref))
-
-        if reversible:
-            try:
-                T_range = np.linspace(min(T_eval), max(T_eval) * 1.5, 100)
-                X_eq_din_range = [
-                    equilibrium_conversion_calculate(
-                        calculate_keq_auto(sim_params, T=T),
-                        stoichiometry,
-                        C_A0, C_B0,
-                        C_C0, C_D0
-                    ) for T in T_eval
-                ]
-                graph_equilibrium_vs_temperature(T_range, X_eq_din_range)
-                graph_conversion_with_equilibrium(t_eval, X_A_eval, X_eq_din_range)
-            except Exception as e:
-                print(f"❌ Error al graficar el equilibrio: {e}")
-
-
 
         return t_eval, X_A_eval, T_eval, concentrations, sol.t[-1], k_final, Ta2

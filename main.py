@@ -12,13 +12,13 @@ app = FastAPI()
 # Configuración de CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # O podés restringir a tu dominio en producción
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Modelo que representa los parámetros que envías desde el front
+# Modelo que representa los parámetros recibidos desde el front
 class SimParams(BaseModel):
     mode_op: str
     k_eq_method: str
@@ -58,7 +58,6 @@ class SimParams(BaseModel):
     Cp_ref: Optional[float] = None
 
 # Ruta que recibe los datos
-
 @app.post("/simulate")
 async def recibir_parametros(sim_params: SimParams):
     sim_params_dict = sim_params.dict()
