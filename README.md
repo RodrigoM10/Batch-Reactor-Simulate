@@ -52,6 +52,19 @@ La respuesta incluye:
 * Vectores de tiempo, conversión, concentraciones, temperatura (modo no isotérmico)
 * Parámetros calculados (tiempo total, volumen si se solicita, conversión alcanzada)
 * Datos listos para graficar en frontend
+
+🌐 Integración con Frontend
+Este backend está preparado para funcionar junto con una interfaz gráfica desarrollada en React.
+Podés usarla desde el siguiente repositorio:
+
+🔗 Frontend: Batch-Reactor-Front
+
+La interfaz permite seleccionar el tipo de simulación, ingresar parámetros, enviar peticiones al backend y visualizar los resultados mediante gráficos interactivos.
+Para conectarla:
+Cloná y ejecutá el backend (uvicorn main:app --reload)
+Cloná y ejecutá el frontend (npm run dev)
+Asegurate de que el frontend apunte a http://localhost:8000 u otra URL donde tengas corriendo el backend.
+
 📖 Documentación completa
 La lógica interna y fundamentos del simulador se explican en el Trabajo Final de Rodrigo Mendoza:
 "Modelado y Simulación de un Reactor Batch en Python" (2025).
