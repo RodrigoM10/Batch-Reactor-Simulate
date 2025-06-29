@@ -161,6 +161,17 @@ def simulate_batch_reactor(sim_params: dict):
             mode_energy, U, A_ICQ, T_cool, m_c, Cp_ref, sim_params=sim_params
         )
 
+        if mode_energy == "icq":
+            try:
+                Qgb_eval, Qrb_eval = heat_rates_calculate(
+                    X_A_eval, T_eval, A, E, T_ref, delta_H_rxn,
+                    C_A0, C_B0, C_C0, C_D0, order, stoichiometry, excess_B, reversible,
+                    sim_params,
+                    U, A_ICQ, T_cool, m_c, Cp_ref
+                )
+            except Exception as e:
+                print(f"❌ Error Calculo de Calor Generado: {e}")
+
         resultado["success"] = True
         resultado["summary"] = {
             "t_final": t_final,
