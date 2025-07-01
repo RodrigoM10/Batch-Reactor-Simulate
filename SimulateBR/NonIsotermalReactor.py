@@ -55,10 +55,10 @@ def balance_reactor_nonisothermal(t, y, k, A, C_A0, C_B0, C_C0, C_D0, C_I, order
             X_eq_T = equilibrium_conversion_calculate(
                 K_eq_T, stoichiometry, C_A0, C_B0, C_C0, C_D0
             )
-            if X_A >= X_eq_T:
+            if X_eq_T is not None and X_A >= X_eq_T:
                 return [0.0, 0.0]
         except ValueError:
-            pass
+            print("⚠️ Error al calcular X_eq_T (equilibrio): se omitirá el freno por equilibrio.")
 
     dX_A_dt = r_A / C_A0
     Q_gb = -delta_H_rxn * r_A

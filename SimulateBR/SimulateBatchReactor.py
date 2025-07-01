@@ -50,9 +50,20 @@ def simulate_batch_reactor(sim_params: dict):
         if reversible:
             print("\n--- Cálculo de K_eq ---")
             K_eq = calculate_keq_auto(sim_params)
-            print(f"✅ K_eq calculado automáticamente: {K_eq:.4f}")
             X_eq = equilibrium_conversion_calculate(K_eq, stoichiometry, C_A0, C_B0, C_C0, C_D0)
-            print(f"✅ Conversión de equilibrio calculada: X_eq = {X_eq:.3f}")
+
+            if X_eq is None:
+                resultado["message"] = (
+                    f"❌ No se pudo calcular la conversión de equilibrio a partir de K_eq = {K_eq:.4e}. "
+                    "Verifique los parámetros de entrada o la estequiometría."
+                )
+                resultado["success"] = False
+                resultado["warning"] = False
+                resultado["summary"] = {}
+                resultado["data"] = {}
+                return resultado
+
+
 
         option = sim_params["option"].strip().upper()
         if option == "X":

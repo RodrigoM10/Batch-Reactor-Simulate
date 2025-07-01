@@ -24,6 +24,7 @@ def nonisothermal_batch_reactor_simulate(k, C_A0, C_B0, C_C0, C_D0, C_I, order, 
             k = calculate_rate_constant(A=A, E=E, T=T, T_ref=T_ref)
 
             K_eq_T = None
+
             if reversible and K_eq_ref is not None:
                 K_eq_T = calculate_keq_auto(sim_params, T=T)
                 try:
@@ -43,6 +44,7 @@ def nonisothermal_batch_reactor_simulate(k, C_A0, C_B0, C_C0, C_D0, C_I, order, 
 
         # Solo incluir evento de equilibrio si es reversible
         events = None
+        print("valor de K EQ REF ", K_eq_ref)
         if reversible and K_eq_ref is not None:
             def equilibrium_event(t, y):
                 X_A = y[0]
