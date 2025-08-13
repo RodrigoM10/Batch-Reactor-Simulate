@@ -183,13 +183,35 @@ def simulate_batch_reactor(sim_params: dict):
             except Exception as e:
                 print(f"❌ Error Calculo de Calor Generado: {e}")
 
+        ans_volume = sim_params.get("ans_volume", "n").strip().lower()
+        V = None
+        if ans_volume == "s":
+            try:
+                P_k = sim_params["P_k"]
+                t_mcd = sim_params["t_mcd"]
+                product_k = sim_params["product_k"].strip().upper()
+                m_k = sim_params["m_k"] / 1000
+                C_k_final = concentrations[product_k][-1]  # Última concentración simulada del producto
+                if C_k_final <= 0:
+                    raise ValueError(f"La concentración final del producto '{product_k}' no puede ser cero o negativa.")
+                V = calculate_batch_reactor_volume(
+                    P_k,
+                    m_k,
+                    C_k_final,
+                    t_final,
+                    t_mcd
+                )
+                print(f"✅ Volumen necesario del reactor: {V:.2f} L")
+            except Exception as e:
+                print(f"❌ Error calculando volumen: {e}")
+
         resultado["success"] = True
         resultado["summary"] = {
             "t_final": t_final,
             "X_A_final": X_A_eval[-1],
             "k_final": k_final,
             "T_final": T_eval[-1],
-            "volume": None,
+            "volume": round(V, 2) if V is not None else None,
             "Qgb_eval":Qgb_eval,
             "Qrb_eval":Qrb_eval
         }

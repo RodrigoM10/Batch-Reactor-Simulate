@@ -6,5 +6,5 @@ def calculate_batch_reactor_volume(P_k, m_k, C_P, t_reaccion, t_mcd):
     if T_op <= 0:
         raise ValueError("Tiempo total inválido.")
 
-    V = (P_k * T_op) / (C_P * m_k)  # (kg/tiempo * tiempo) / (mol/l * kg/mol) resultado en Litros
+    V = (P_k * T_op) / (C_P * m_k) 
     return V
