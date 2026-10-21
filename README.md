@@ -1,4 +1,4 @@
-﻿# 🔬 Batch Reactor Simulate - Backend
+﻿# 🔬 Batch Reactor Simulate - Backend (VER CODIGO EN BRACH: SimulateBR-dev
 
 Backend desarrollado en Python para simular el comportamiento de un reactor batch (Tanque Agitado Discontinuo - TAD) en modo isotérmico y no isotérmico. Expone una API con FastAPI para recibir parámetros de simulación y devolver resultados numéricos y gráficos.
 
